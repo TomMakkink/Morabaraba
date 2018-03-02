@@ -1,0 +1,9 @@
+C:\Users\Luke des Tombe\Desktop\Muraba\Muraba\bin\Debug\Muraba.exe.config
+C:\Users\Luke des Tombe\Desktop\Muraba\Muraba\bin\Debug\Muraba.XML
+C:\Users\Luke des Tombe\Desktop\Muraba\Muraba\bin\Debug\Muraba.exe
+C:\Users\Luke des Tombe\Desktop\Muraba\Muraba\bin\Debug\Muraba.pdb
+C:\Users\Luke des Tombe\Desktop\Muraba\Muraba\bin\Debug\FSharp.Core.dll
+C:\Users\Luke des Tombe\Desktop\Muraba\Muraba\bin\Debug\System.ValueTuple.dll
+C:\Users\Luke des Tombe\Desktop\Muraba\Muraba\bin\Debug\FSharp.Core.xml
+C:\Users\Luke des Tombe\Desktop\Muraba\Muraba\obj\Debug\Muraba.exe
+C:\Users\Luke des Tombe\Desktop\Muraba\Muraba\obj\Debug\Muraba.pdb
