@@ -103,8 +103,45 @@ let createNewNode node: node =
      number = node.number + 1
      }
 
+// this function returns the nieghbours of the node name put in it returns a string list though.
+let createNodeNieghbours (nodeName:string) =
+ match nodeName with 
+ | "a0" -> ["a3";"d0";"b1"]
+ | "a3" -> ["a0"; "b3"; "a6"]
+ | "a6" -> ["a3"; "d6"; "b5"]
+ | "b1" -> ["a0"; "c2"; "d1"; "b3"]
+ | "b3" -> ["a3"; "c3"; "b1"; "b5"]
+ | "b5" -> ["a6"; "c4"; "b3"; "d5"]
+ | "c2" -> ["b1"; "c3"; "d2"]
+ | "c3" -> ["c2"; "c4"; "b3"]
+ | "c4" -> ["c3"; "b5"; "d4"]
+ | "d0" -> ["d1"; "a0"; "g0"]
+ | "d1" -> ["d0"; "b1"; "d2"; "f1";]
+ | "d2" -> ["d1"; "c2"; "e2"]
+ | "d4" -> ["d5"; "c4"; "e4"]
+ | "d5" -> ["d4"; "d6"; "b5"; "f5"]
+ | "d6" -> ["d5"; "a6"; "g6"]
+ | "e2" -> ["f1"; "e3"; "d2"]
+ | "e3" -> ["e2"; "e4"; "f3"]
+ | "e4" -> ["e3"; "f5"; "d4"]
+ | "f1" -> ["d1"; "f3"; "e2"; "g0"]
+ | "f3" -> ["f1"; "e3"; "g3"; "f5"]
+ | "f5" -> ["g6"; "d5"; "e4"]
+ | "g0" -> ["g3"; "f1"; "d0"]
+ | "g3" -> ["g0"; "g6"; "f3"]
+ | "g6" -> ["g3"; "f5"; "d6"]
+ | _ -> failwith "What did we do wrong..."
 
-    
+// this method takes in a node name and returns the actual node. 
+let GetNodeFromName (nodeName:string) (nodeList: node List) =
+ let rec getNode (tempNodeList: node List) = 
+  match tempNodeList with 
+  | [] -> failwith "This is not the node your looking for"
+  | h::rest -> 
+   match h.Name = nodeName with  
+   | true -> h
+   | false -> getNode rest
+ getNode nodeList
 (*
         0   1   2   3   4   5   6
     a   x-----------x-----------x
