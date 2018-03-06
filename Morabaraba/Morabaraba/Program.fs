@@ -6,6 +6,7 @@ type Cow = {
     isOP : bool
     isOnBoard : bool
     isAlive: bool
+    inMill: int
     } //something to make lukes life easier TODO:--
 
 type Player = 
@@ -48,12 +49,12 @@ let givePlayerCows  (myList: Cow list) team=
         | _ -> 
             match team with 
             | 1 ->
-                let newCow = {Name = ("R" + (string acc));Position = "NP"; isOP = false; isOnBoard = false; isAlive = true }
+                let newCow = {Name = ("R" + (string acc));Position = "NP"; isOP = false; isOnBoard = false; isAlive = true; inMill = 0 }
                 let name = newCow.Name
                 let fieldCows = newCow::playerFieldCows
                 giveCows fieldCows (acc+1)
             | 2 ->
-                let newCow = {Name = ("B" + (string acc));Position = "NP"; isOP = false; isOnBoard=false; isAlive = true}
+                let newCow = {Name = ("B" + (string acc));Position = "NP"; isOP = false; isOnBoard=false; isAlive = true; inMill = 0}
                 let name = newCow.Name
                 let fieldCows = newCow::playerFieldCows
                 giveCows fieldCows (acc+1)
@@ -106,7 +107,7 @@ let createNewNode node: node =
      team = 0
      neighbours = []
      number = node.number + 1
-     cow = {Name = "[]";Position = "NP"; isOP = false; isOnBoard = false; isAlive = false }
+     cow = {Name = "[]";Position = "NP"; isOP = false; isOnBoard = false; isAlive = false; inMill = 0 }
      }
 
 // this function returns the nieghbours of the node name put in it returns a string list though.
@@ -178,38 +179,78 @@ let nodesInARow (nodeName: string) =
  | "g6" -> [["g0";"g3";"g6"];["g6";"d6";"a6"];["g6";"f5";"e4"]]
  | _ -> failwith "This cow is all alone"
 
-// This will return an int value that we can than say how many mills are formed.
-let checkHowManyMills (millNodeLists: string List List) (mainNodeList: node List) =
- let rec check (nodeList: string List List) (numOfMills:int) =
+// this method will check each cows mill number in the given row to see if they are allowed to form a mill
+let CheckMillNumber listOfRows cowsToCheck = 
+  let h::m::t::_ = listOfRows
+  let cow1 = List.find (fun (x:Cow) -> x.Position = h ) cowsToCheck
+  let cow2 = List.find (fun (x:Cow) -> x.Position = m ) cowsToCheck
+  let cow3 = List.find (fun (x:Cow) -> x.Position = t ) cowsToCheck
+  match (cow1.inMill = 0 && cow2.inMill = 0) && cow3.inMill =0 with 
+  | true -> true, listOfRows
+  | _ -> false,listOfRows
+
+
+// this method will return a (bool*string List) which is a bool to show if a mill formed or not and the row.
+let checkCowsInRow (millNodeLists: string List List) (mainNodeList: node List) (cowsOnField: Cow List)=
+ let rec check (nodeList: string List List)  =
   match nodeList with 
-  | [] -> numOfMills
+  | [] -> false,[]
   | h::rest ->
    let fir::sec::third::_ = h
    let firNode = GetNodeFromName fir mainNodeList
    let secNode = GetNodeFromName sec mainNodeList
-   let thirdNode = GetNodeFromName (List.head h) mainNodeList
+   let thirdNode = GetNodeFromName third mainNodeList
    match firNode.Occupied && secNode.Occupied && thirdNode.Occupied with 
-   | false -> check rest numOfMills
+   | false -> check rest 
    | true ->
     match firNode.team = secNode.team && thirdNode.team = secNode.team with 
-    | false ->  check rest numOfMills
-    | true -> check rest (numOfMills+3)
- check millNodeLists 0
+    | false ->  check rest 
+    | true -> 
+     match CheckMillNumber h cowsOnField with 
+     | false,_ -> check rest
+     | true,x -> true,x
+ check millNodeLists 
 
-// this funtion will returns how many mills have been formed.
-let CheckinMill (cow:Cow) (nodeList: node List) (player:Player) = 
- match cow.isAlive && cow.isOnBoard with 
- | false -> 0
+// CHECK TO SEE IF I DON"T NEED THIS METHOD
+// this method will use the method checkCowsInRow to check if any of the combo rows are true and return (bool*string List)
+let CheckinMill (cow:Cow Option) (nodeList: node List) (player:Player) = 
+ match cow with 
+ |None -> 0,[]
+ |Some cows ->
+  match cows.isAlive && cows.isOnBoard with 
+  | false -> 0,[]
+  | true -> 
+   match player.cowsOnField.Length > 2 with 
+    | false -> 0,[]
+    | true -> 
+     let millNodes = nodesInARow cows.Position
+     let ifCows= checkCowsInRow millNodes nodeList player.cowsOnField
+     match ifCows with 
+     | false,_ -> 0,[]
+     | true,millrow ->
+      printfn "A mill was formed \n"
+      1,millrow
+// this is the method that returns the updated lists.      
+let shooting deadCow herdLeft =
+ let rec check inList outList = 
+  match inList with 
+  | [] -> List.rev outList 
+  | h::rest -> 
+   match h=deadCow with 
+   | true -> check rest outList
+   | false -> check rest (h::outList)
+ check herdLeft []
+// This will return an updated enemy cowsleft and cowsOnField and will not allow friendly fire
+// still need to call the board update as well as make sure the cow is dead
+let shootCow nodeName mainNodeList enemy = 
+ let actualNode = GetNodeFromName nodeName mainNodeList
+ match actualNode.Occupied && actualNode.team<>enemy.Team with 
+ | false -> enemy
  | true -> 
-  match List.exists (fun x -> ((=) cow)x) player.cowsLeft with 
-   | false -> 0
-   | true -> 
-    let millNodes = nodesInARow cow.Position
-    let (numMills:int) = checkHowManyMills millNodes nodeList
-    match numMills % 3 = 0 with 
-    | false -> 0
-    | true -> numMills / 3
-
+  let newCowsLeft = shooting actualNode.cow enemy.cowsLeft
+  let newCowsOnField = shooting actualNode.cow enemy.cowsOnField
+  let updateEnemy = {Name = enemy.Name; cowsLeft = newCowsLeft ; isTurn = enemy.isTurn; cowsOnField = newCowsOnField; Team = enemy.Team}
+  updateEnemy
 // this creates all the nodes and puts them all into one list.
 let createNodeList =
     let initPoint = {xCoord=0; yCoord="a";}
@@ -222,7 +263,7 @@ let createNodeList =
         team = 0
         neighbours = createNodeNieghbours initName
         number = 0
-        cow = {Name = "[]";Position = "NP"; isOP = false; isOnBoard = false; isAlive = true }
+        cow = {Name = "[]";Position = "NP"; isOP = false; isOnBoard = false; isAlive = true; inMill = 0 }
         }
 
     let rec createField node listNode acc =
@@ -305,8 +346,12 @@ let gameController () =
                 let place = System.Console.ReadLine()
                 let playerPlace = placeCow place field p1
                 let h::p1CowsLeft = p1.cowsLeft
-                let updatedPlayer1 = {p1 with cowsLeft = p1CowsLeft; cowsOnField = h::p1.cowsOnField}
+                let newCow = {Name =h.Name; Position = place; isAlive = h.isAlive; isOnBoard = true; isOP=h.isOP; inMill = h.inMill}
+                let updatedPlayer1 = {p1 with cowsLeft = p1CowsLeft; cowsOnField = newCow::p1.cowsOnField}
                 printField playerPlace
+                // check with jeff when the node list occupied is updated cause mill method is failing due to that.
+                let q =CheckinMill (List.tryHead updatedPlayer1.cowsOnField) (field) (updatedPlayer1) 
+// will return a (bool*string List) that is if there is a mill and what row it is.
                 printfn " "
                 stateMachine state updatedPlayer1 p2 playerPlace (turns + 1)
         | 1 -> printfn "2nd stage"

@@ -34,3 +34,12 @@ C:\Users\Luke des Tombe\Desktop\Morabaraba Actual\Morabaraba\Morabaraba\obj\Debu
 \\ict.ru.ac.za\DFS\UGHomes\g15s5995\Desktop\lukeses stuffses\Morabaraba\Morabaraba\Morabaraba\bin\Debug\FSharp.Core.xml
 \\ict.ru.ac.za\DFS\UGHomes\g15s5995\Desktop\lukeses stuffses\Morabaraba\Morabaraba\Morabaraba\obj\Debug\Morabaraba.exe
 \\ict.ru.ac.za\DFS\UGHomes\g15s5995\Desktop\lukeses stuffses\Morabaraba\Morabaraba\Morabaraba\obj\Debug\Morabaraba.pdb
+C:\Users\Luke des Tombe\Desktop\Morabaraba\Morabaraba\Morabaraba\bin\Debug\Morabaraba.exe.config
+C:\Users\Luke des Tombe\Desktop\Morabaraba\Morabaraba\Morabaraba\bin\Debug\Morabaraba.XML
+C:\Users\Luke des Tombe\Desktop\Morabaraba\Morabaraba\Morabaraba\bin\Debug\Morabaraba.exe
+C:\Users\Luke des Tombe\Desktop\Morabaraba\Morabaraba\Morabaraba\bin\Debug\Morabaraba.pdb
+C:\Users\Luke des Tombe\Desktop\Morabaraba\Morabaraba\Morabaraba\bin\Debug\FSharp.Core.dll
+C:\Users\Luke des Tombe\Desktop\Morabaraba\Morabaraba\Morabaraba\bin\Debug\System.ValueTuple.dll
+C:\Users\Luke des Tombe\Desktop\Morabaraba\Morabaraba\Morabaraba\bin\Debug\FSharp.Core.xml
+C:\Users\Luke des Tombe\Desktop\Morabaraba\Morabaraba\Morabaraba\obj\Debug\Morabaraba.exe
+C:\Users\Luke des Tombe\Desktop\Morabaraba\Morabaraba\Morabaraba\obj\Debug\Morabaraba.pdb
