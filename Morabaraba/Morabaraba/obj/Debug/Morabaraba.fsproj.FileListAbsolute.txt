@@ -25,3 +25,12 @@ C:\Users\Luke des Tombe\Desktop\Morabaraba Actual\Morabaraba\Morabaraba\bin\Debu
 C:\Users\Luke des Tombe\Desktop\Morabaraba Actual\Morabaraba\Morabaraba\bin\Debug\FSharp.Core.xml
 C:\Users\Luke des Tombe\Desktop\Morabaraba Actual\Morabaraba\Morabaraba\obj\Debug\Morabaraba.exe
 C:\Users\Luke des Tombe\Desktop\Morabaraba Actual\Morabaraba\Morabaraba\obj\Debug\Morabaraba.pdb
+\\ict.ru.ac.za\DFS\UGHomes\g15s5995\Desktop\lukeses stuffses\Morabaraba\Morabaraba\Morabaraba\bin\Debug\Morabaraba.exe.config
+\\ict.ru.ac.za\DFS\UGHomes\g15s5995\Desktop\lukeses stuffses\Morabaraba\Morabaraba\Morabaraba\bin\Debug\Morabaraba.XML
+\\ict.ru.ac.za\DFS\UGHomes\g15s5995\Desktop\lukeses stuffses\Morabaraba\Morabaraba\Morabaraba\bin\Debug\Morabaraba.exe
+\\ict.ru.ac.za\DFS\UGHomes\g15s5995\Desktop\lukeses stuffses\Morabaraba\Morabaraba\Morabaraba\bin\Debug\Morabaraba.pdb
+\\ict.ru.ac.za\DFS\UGHomes\g15s5995\Desktop\lukeses stuffses\Morabaraba\Morabaraba\Morabaraba\bin\Debug\FSharp.Core.dll
+\\ict.ru.ac.za\DFS\UGHomes\g15s5995\Desktop\lukeses stuffses\Morabaraba\Morabaraba\Morabaraba\bin\Debug\System.ValueTuple.dll
+\\ict.ru.ac.za\DFS\UGHomes\g15s5995\Desktop\lukeses stuffses\Morabaraba\Morabaraba\Morabaraba\bin\Debug\FSharp.Core.xml
+\\ict.ru.ac.za\DFS\UGHomes\g15s5995\Desktop\lukeses stuffses\Morabaraba\Morabaraba\Morabaraba\obj\Debug\Morabaraba.exe
+\\ict.ru.ac.za\DFS\UGHomes\g15s5995\Desktop\lukeses stuffses\Morabaraba\Morabaraba\Morabaraba\obj\Debug\Morabaraba.pdb

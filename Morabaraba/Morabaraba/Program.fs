@@ -6,7 +6,7 @@ type Cow = {
     isOP : bool
     isOnBoard : bool
     isAlive: bool
-    }
+    } //something to make lukes life easier TODO:--
 
 type Player = 
      {
@@ -14,6 +14,7 @@ type Player =
       cowsLeft : Cow List
       isTurn: bool
       cowsOnField: Cow List
+      Team : int
       }
 
 type Point = {
@@ -57,7 +58,7 @@ let givePlayerCows  (myList: Cow list) team=
     giveCows myList 0
 // this creates the players at the begining of the game
 let createPlayer (name:string) team = 
-     let player1 = {Name = name; cowsLeft = givePlayerCows ([]) team ; isTurn = false; cowsOnField = []}
+     let player1 = {Name = name; cowsLeft = givePlayerCows ([]) team ; isTurn = false; cowsOnField = []; Team = team}
      player1
 // this creates each new node and returns them in a giant list.
 let createNewNode node: node = 
@@ -159,9 +160,9 @@ let nodesInARow (nodeName: string) =
  | "d0" -> [["d0";"d1";"d2"];["a0";"d0";"g0"]]
  | "d1" -> [["d0";"d1";"d2"];["b1";"d1";"f1"]]
  | "d2" -> [["d0";"d1";"d2"];["d2";"e2";"c2"]]
- | "d4" -> [["d4";"d5";"d6"];["d4";"c4";"e4"];]
- | "d5" -> [["d4";"d5";"d6"];["d5";"b5";"f5"];]
- | "d6" -> [["d4";"d5";"d6"];["a6";"d6";"g6"];]
+ | "d4" -> [["d4";"d5";"d6"];["d4";"c4";"e4"]]
+ | "d5" -> [["d4";"d5";"d6"];["d5";"b5";"f5"]]
+ | "d6" -> [["d4";"d5";"d6"];["a6";"d6";"g6"]]
  | "e2" -> [["e2";"e3";"e4"];["e2";"f1";"g0"];["e2";"d2";"c2"]]
  | "e3" -> [["e2";"e3";"e4"];["e3";"f3";"g3"]]
  | "e4" -> [["e2";"e3";"e4"];["e4";"f5";"g6"];["e4";"d4";"c4"]]
@@ -232,27 +233,53 @@ let printField (nodeList: node List) =
     //printfn "0  1    2       3       4  5   6"
     List.iteri ( fun i x -> 
             match i with 
-            | 0 | 1 -> printf "%s------------" x.Name
-            | 2 -> printfn "%s   " x.Name
-            | 3 -> printf "|  %s---------" x.Name
-            | 4 -> printf "%s---------" x.Name
-            | 5 -> printfn "%s  |" x.Name
-            | 6 -> printf "|  |  %s------" x.Name
-            | 7 -> printf "%s------" x.Name
-            | 8 -> printfn "%s  |  |" x.Name
-            | 9 | 10 -> printf "%s-" x.Name
-            | 11 -> printf "%s              " x.Name
-            | 12 | 13 -> printf "%s-" x.Name
-            | 14 -> printfn "%s" x.Name
-            | 15 -> printf "|  |  %s------" x.Name
-            | 16 -> printf "%s------" x.Name
-            | 17 -> printfn "%s  |  |" x.Name
-            | 18 -> printf "|  %s---------" x.Name
-            | 19 -> printf "%s---------" x.Name
-            | 20 -> printfn "%s  |" x.Name
-            | 21 | 22 -> printf "%s------------" x.Name
-            | 23 -> printfn "%s" x.Name
+            | 0 | 1 -> printf "%s %d------------" x.Name x.team
+            | 2 -> printfn "%s %d   " x.Name x.team
+                   printfn "| \            |           / |"
+            | 3 -> printf "|  %s %d---------" x.Name x.team
+            | 4 -> printf "%s %d---------" x.Name x.team
+            | 5 -> printfn "%s %d  |" x.Name x.team
+                   printfn "|  | \         |        / |  |"
+            | 6 -> printf "|  |  %s %d------" x.Name x.team
+            | 7 -> printf "%s %d------" x.Name x.team
+            | 8 -> printfn "%s %d  |  |" x.Name x.team
+                   printfn "|  |  |                |  |  |"
+            | 9 | 10 -> printf "%s %d-" x.Name x.team
+            | 11 -> printf "%s %d              " x.Name x.team
+            | 12 | 13 -> printf "%s %d-" x.Name x.team
+            | 14 -> printfn "%s %d" x.Name x.team
+                    printfn "|  |  |                |  |  |"
+            | 15 -> printf "|  |  %s %d------" x.Name x.team
+            | 16 -> printf "%s %d------" x.Name x.team
+            | 17 -> printfn "%s %d  |  |" x.Name x.team
+                    printfn "|  | /         |        \ |  |"
+            | 18 -> printf "|  %s %d---------" x.Name x.team
+            | 19 -> printf "%s %d---------" x.Name x.team
+            | 20 -> printfn "%s %d  |" x.Name x.team
+                    printfn "| /            |           \ |"
+            | 21 | 22 -> printf "%s %d------------" x.Name x.team
+            | 23 -> printfn "%s %d" x.Name x.team
     ) nodeList
+
+let updateList tNode inList outList player =
+    let rec update inList outList =
+        match inList with 
+        | [] -> List.rev outList
+        | head::tail ->
+            match tNode.Name = head.Name with
+            | true -> let newOut = {head with Occupied = true; team = player.Team }::outList
+                      update tail newOut 
+            | false -> update tail (head::outList)
+    update inList outList
+                  
+
+
+let placeCow position fieldList player =
+    let targetNode = List.find (fun x -> x.Name = position) fieldList
+    match targetNode.team with
+    | 0 -> updateList targetNode fieldList [] player
+    | _ -> failwith "invalid move"
+
 
 [<EntryPoint>]
 let main argv =
@@ -267,9 +294,14 @@ let main argv =
     printf "%A :   " player1.Name
     List.iter ( fun (c:Cow) -> printf " %s" c.Name) player1.cowsLeft
     printfn ""
-    System.Console.ForegroundColor<-System.ConsoleColor.Cyan
+    System.Console.ForegroundColor<-System.ConsoleColor.Blue
     printf "%A :   " player2.Name
     List.iter ( fun (c:Cow) -> printf " %s" c.Name) player2.cowsLeft
-    let halt = System.Console.ReadLine()
+    printfn "place cow  in"
+    let place = System.Console.ReadLine()
+    let test = placeCow place field player1
+    printfn " "
+    let testprint = printField test
+    let halt = System.Console.ReadLine ()
     printfn "%A" argv
     0 // return an integer exit code
