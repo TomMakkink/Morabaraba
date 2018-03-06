@@ -26,6 +26,8 @@ type Point = {
         1 = player 1 team
         2 = player 2 team
         *)
+
+ 
 type node = {
     Name: string
     Position : Point
@@ -33,6 +35,7 @@ type node = {
     team: int 
     neighbours: string List
     number: int
+    cow : Cow
     }
 
 
@@ -103,6 +106,7 @@ let createNewNode node: node =
      team = 0
      neighbours = []
      number = node.number + 1
+     cow = {Name = "[]";Position = "NP"; isOP = false; isOnBoard = false; isAlive = false }
      }
 
 // this function returns the nieghbours of the node name put in it returns a string list though.
@@ -218,6 +222,7 @@ let createNodeList =
         team = 0
         neighbours = createNodeNieghbours initName
         number = 0
+        cow = {Name = "[]";Position = "NP"; isOP = false; isOnBoard = false; isAlive = true }
         }
 
     let rec createField node listNode acc =
@@ -231,45 +236,48 @@ let createNodeList =
 
 let printField (nodeList: node List) =
     //printfn "0  1    2       3       4  5   6"
+    printf "a  "
     List.iteri ( fun i x -> 
             match i with 
-            | 0 | 1 -> printf "%s %d------------" x.Name x.team
-            | 2 -> printfn "%s %d   " x.Name x.team
-                   printfn "| \            |           / |"
-            | 3 -> printf "|  %s %d---------" x.Name x.team
-            | 4 -> printf "%s %d---------" x.Name x.team
-            | 5 -> printfn "%s %d  |" x.Name x.team
-                   printfn "|  | \         |        / |  |"
-            | 6 -> printf "|  |  %s %d------" x.Name x.team
-            | 7 -> printf "%s %d------" x.Name x.team
-            | 8 -> printfn "%s %d  |  |" x.Name x.team
-                   printfn "|  |  |                |  |  |"
-            | 9 | 10 -> printf "%s %d-" x.Name x.team
-            | 11 -> printf "%s %d              " x.Name x.team
-            | 12 | 13 -> printf "%s %d-" x.Name x.team
-            | 14 -> printfn "%s %d" x.Name x.team
-                    printfn "|  |  |                |  |  |"
-            | 15 -> printf "|  |  %s %d------" x.Name x.team
-            | 16 -> printf "%s %d------" x.Name x.team
-            | 17 -> printfn "%s %d  |  |" x.Name x.team
-                    printfn "|  | /         |        \ |  |"
-            | 18 -> printf "|  %s %d---------" x.Name x.team
-            | 19 -> printf "%s %d---------" x.Name x.team
-            | 20 -> printfn "%s %d  |" x.Name x.team
-                    printfn "| /            |           \ |"
-            | 21 | 22 -> printf "%s %d------------" x.Name x.team
-            | 23 -> printfn "%s %d" x.Name x.team
+            | 0 | 1 -> printf "%s------------" x.cow.Name
+            | 2 -> printfn "%s   " x.cow.Name 
+                   printfn "   | \            |           / |"
+            | 3 -> printf "b  |  %s---------" x.cow.Name
+            | 4 -> printf "%s---------" x.cow.Name 
+            | 5 -> printfn "%s  |" x.cow.Name 
+                   printfn "   |  | \         |        / |  |"
+            | 6 -> printf "c  |  |  %s------" x.cow.Name
+            | 7 -> printf "%s------" x.cow.Name 
+            | 8 -> printfn "%s  |  |" x.cow.Name 
+                   printfn "   |  |  |                |  |  |"
+                   printf "d  "
+            | 9 | 10 -> printf "%s-" x.cow.Name 
+            | 11 -> printf "%s              " x.cow.Name 
+            | 12 | 13 -> printf "%s-" x.cow.Name 
+            | 14 -> printfn "%s" x.cow.Name 
+                    printfn "   |  |  |                |  |  |"
+            | 15 -> printf "e  |  |  %s------" x.cow.Name 
+            | 16 -> printf "%s------" x.cow.Name 
+            | 17 -> printfn "%s  |  |" x.cow.Name 
+                    printfn "   |  | /         |        \ |  |"
+            | 18 -> printf "f  |  %s---------" x.cow.Name 
+            | 19 -> printf "%s---------" x.cow.Name 
+            | 20 -> printfn "%s  |" x.cow.Name 
+                    printfn "   | /            |           \ |"
+                    printf "g  "
+            | 21 | 22 -> printf "%s------------" x.cow.Name 
+            | 23 -> printfn "%s" x.cow.Name 
     ) nodeList
 
 let updateList tNode inList outList player =
-    let rec update inList outList =
+    let rec update inList outList  =
         match inList with 
         | [] -> List.rev outList
         | head::tail ->
             match tNode.Name = head.Name with
-            | true -> let newOut = {head with Occupied = true; team = player.Team }::outList
+            | true -> let newOut = {head with Occupied = true; team = player.Team; cow = List.head player.cowsLeft}::outList
                       update tail newOut 
-            | false -> update tail (head::outList)
+            | false -> update tail (head::outList) 
     update inList outList
                   
 
@@ -280,28 +288,35 @@ let placeCow position fieldList player =
     | 0 -> updateList targetNode fieldList [] player
     | _ -> failwith "invalid move"
 
-
-[<EntryPoint>]
-let main argv =
-    System.Console.ForegroundColor<-System.ConsoleColor.Green
-    let field = List.rev createNodeList
-    printfn " "
-    let print = printField field
+let gameController () =
     let player1 = createPlayer "Power Rangers" 1
     let player2 = createPlayer  "Avengers" 2
+    let fieldList = List.rev createNodeList
     printfn " "
-    System.Console.ForegroundColor<-System.ConsoleColor.Red
-    printf "%A :   " player1.Name
-    List.iter ( fun (c:Cow) -> printf " %s" c.Name) player1.cowsLeft
-    printfn ""
-    System.Console.ForegroundColor<-System.ConsoleColor.Blue
-    printf "%A :   " player2.Name
-    List.iter ( fun (c:Cow) -> printf " %s" c.Name) player2.cowsLeft
-    printfn "place cow  in"
-    let place = System.Console.ReadLine()
-    let test = placeCow place field player1
-    printfn " "
-    let testprint = printField test
+    let print = printField fieldList
+
+    let rec stateMachine state p1 p2 field turns = 
+        match state with 
+        | 0 ->
+            match turns < 13 with
+            | false -> stateMachine (state+1) p1 p2 field turns
+            | _ ->
+                printfn "place cow in       turn = %d" turns
+                let place = System.Console.ReadLine()
+                let playerPlace = placeCow place field p1
+                let h::p1CowsLeft = p1.cowsLeft
+                let updatedPlayer1 = {p1 with cowsLeft = p1CowsLeft; cowsOnField = h::p1.cowsOnField}
+                printField playerPlace
+                printfn " "
+                stateMachine state updatedPlayer1 p2 playerPlace (turns + 1)
+        | 1 -> printfn "2nd stage"
+        | 2 -> printfn "super stage"
+        | _ -> printfn "something went wrong with the game states"
+    stateMachine 0 player1 player2 fieldList 1
+[<EntryPoint>]
+let main argv =
+    let game = gameController ()
+    printfn "-=-=-=-=-=-=-=- END GAME -=-=-=-=-=-=-=-=-=-" 
     let halt = System.Console.ReadLine ()
     printfn "%A" argv
     0 // return an integer exit code
