@@ -7,7 +7,7 @@ type Cow = {
     isOnBoard : bool
     isAlive: bool
     inMill: int
-    } //something to make lukes life easier TODO:--
+    } 
 
 type Player = 
      {
@@ -22,13 +22,10 @@ type Point = {
     xCoord: int
     yCoord: string
     }
-
 (* team 0 = no team
         1 = player 1 team
         2 = player 2 team
         *)
-
- 
 type node = {
     Name: string
     Position : Point
@@ -38,9 +35,6 @@ type node = {
     number: int
     cow : Cow
     }
-
-
-
 // this gives both players their cows
 let givePlayerCows  (myList: Cow list) team=
     let rec giveCows (playerFieldCows: Cow list) acc =
@@ -109,9 +103,8 @@ let createNewNode node: node =
      number = node.number + 1
      cow = {Name = "[]";Position = "NP"; isOP = false; isOnBoard = false; isAlive = false; inMill = 0 }
      }
-
 // this function returns the nieghbours of the node name put in it returns a string list though.
-let createNodeNieghbours (nodeName:string) =
+let createNodeNieghbours nodeName =
  match nodeName with 
  | "a0" -> ["a3";"d0";"b1"]
  | "a3" -> ["a0"; "b3"; "a6"]
@@ -138,9 +131,8 @@ let createNodeNieghbours (nodeName:string) =
  | "g3" -> ["g0"; "g6"; "f3"]
  | "g6" -> ["g3"; "f5"; "d6"]
  | _ -> failwith "What did we do wrong..."
-
 // this method takes in a node name and returns the actual node. 
-let GetNodeFromName (nodeName:string) (nodeList: node List) =
+let GetNodeFromName nodeName nodeList =
  let rec getNode (tempNodeList: node List) = 
   match tempNodeList with 
   | [] -> failwith "This is not the node your looking for"
@@ -149,9 +141,8 @@ let GetNodeFromName (nodeName:string) (nodeList: node List) =
    | true -> h
    | false -> getNode rest
  getNode nodeList
-
 // this funtion will return a list of string lists and these will hold all the combos with that paricular node the cow is on
-let nodesInARow (nodeName: string) =
+let nodesInARow nodeName =
  match nodeName with 
  | "a0" -> [["a0";"a3";"a6"];["a0";"d0";"g0"];["a0";"b1";"c2"]]
  | "a3" -> [["a0";"a3";"a6"];["a3";"b3";"c3"]]
@@ -178,7 +169,6 @@ let nodesInARow (nodeName: string) =
  | "g3" -> [["g0";"g3";"g6"];["g3";"f3";"e3"]]
  | "g6" -> [["g0";"g3";"g6"];["g6";"d6";"a6"];["g6";"f5";"e4"]]
  | _ -> failwith "This cow is all alone"
-
 // this method will check each cows mill number in the given row to see if they are allowed to form a mill
 let CheckMillNumber listOfRows cowsToCheck = 
   let h::m::t::_ = listOfRows
@@ -188,10 +178,8 @@ let CheckMillNumber listOfRows cowsToCheck =
   match (cow1.inMill = 0 && cow2.inMill = 0) && cow3.inMill =0 with 
   | true -> true, listOfRows
   | _ -> false,listOfRows
-
-
 // this method will return a (bool*string List) which is a bool to show if a mill formed or not and the row.
-let checkCowsInRow (millNodeLists: string List List) (mainNodeList: node List) (cowsOnField: Cow List)=
+let checkCowsInRow millNodeLists mainNodeList cowsOnField =
  let rec check (nodeList: string List List)  =
   match nodeList with 
   | [] -> false,[]
@@ -210,10 +198,9 @@ let checkCowsInRow (millNodeLists: string List List) (mainNodeList: node List) (
      | false,_ -> check rest
      | true,x -> true,x
  check millNodeLists 
-
 // CHECK TO SEE IF I DON"T NEED THIS METHOD
 // this method will use the method checkCowsInRow to check if any of the combo rows are true and return (bool*string List)
-let CheckinMill (cow:Cow Option) (nodeList: node List) (player:Player) = 
+let CheckinMill cow nodeList player = 
  match cow with 
  |None -> 0,[]
  |Some cows ->
@@ -240,17 +227,33 @@ let shooting deadCow herdLeft =
    | true -> check rest outList
    | false -> check rest (h::outList)
  check herdLeft []
-// This will return an updated enemy cowsleft and cowsOnField and will not allow friendly fire
+// this will change the node of the now dead cow to unOccupied and also the name of the cow to default
+let updateSadNode newNodes oldNodes = 
+ let rec check inList outList =
+  match inList with 
+  | [] -> List.rev outList
+  | h::rest -> 
+   match h.Name = newNodes.Name with 
+   | true -> 
+    let newNode = {newNodes with Occupied =  false; cow =  {Name = "[]";Position = "NP"; isOP = false; isOnBoard = false; isAlive = false; inMill = 0 }}
+    check rest (newNode::outList)
+   | false -> check rest (h::outList)
+ check oldNodes []  
+// This will return an updated enemy cowsleft and cowsOnField and will not allow friendly fire also returns an updated nodeList
 // still need to call the board update as well as make sure the cow is dead
 let shootCow nodeName mainNodeList enemy = 
  let actualNode = GetNodeFromName nodeName mainNodeList
  match actualNode.Occupied && actualNode.team<>enemy.Team with 
- | false -> enemy
+ | false -> enemy,mainNodeList
  | true -> 
-  let newCowsLeft = shooting actualNode.cow enemy.cowsLeft
-  let newCowsOnField = shooting actualNode.cow enemy.cowsOnField
-  let updateEnemy = {Name = enemy.Name; cowsLeft = newCowsLeft ; isTurn = enemy.isTurn; cowsOnField = newCowsOnField; Team = enemy.Team}
-  updateEnemy
+  match actualNode.cow.inMill <> 1 with 
+  | false -> enemy,mainNodeList
+  | true ->
+   let newCowsLeft = shooting actualNode.cow enemy.cowsLeft
+   let newCowsOnField = shooting actualNode.cow enemy.cowsOnField
+   let updateEnemy = {enemy with cowsLeft = newCowsLeft; cowsOnField = newCowsOnField}
+   let NewMainNode = updateSadNode actualNode mainNodeList
+   updateEnemy,NewMainNode
 // this creates all the nodes and puts them all into one list.
 let createNodeList =
     let initPoint = {xCoord=0; yCoord="a";}
@@ -274,7 +277,7 @@ let createNodeList =
             createField newNode (newNode::listNode) (acc + 1)
     
     createField initNode [initNode] 0
-
+// this just prints the game boards.
 let printField (nodeList: node List) =
     //printfn "0  1    2       3       4  5   6"
     printf "a  "
@@ -309,7 +312,7 @@ let printField (nodeList: node List) =
             | 21 | 22 -> printf "%s------------" x.cow.Name 
             | 23 -> printfn "%s" x.cow.Name 
     ) nodeList
-
+// this is where each node.
 let updateList tNode inList outList player =
     let rec update inList outList  =
         match inList with 
@@ -320,15 +323,27 @@ let updateList tNode inList outList player =
                       update tail newOut 
             | false -> update tail (head::outList) 
     update inList outList
-                  
-
-
+// this places the cows on the field
 let placeCow position fieldList player =
     let targetNode = List.find (fun x -> x.Name = position) fieldList
     match targetNode.team with
     | 0 -> updateList targetNode fieldList [] player
     | _ -> failwith "invalid move"
-
+// this will take in a string List (cow List) and also the players filedcows and the new mill value and return a list of cows
+let changeCowMill millRow fieldCows newMill = 
+ let rec check inList (cowList: Cow List) outList = 
+  match inList with 
+  | [] -> List.rev outList
+  | h::rest ->
+   let head::tail = cowList
+   match h = head.Position with 
+   | false -> check inList tail (head::outList)
+   | true -> 
+    let newCow = {head with inMill = newMill}
+    check rest tail (newCow::outList)
+ check millRow fieldCows []
+   
+// this is our main game controller
 let gameController () =
     let player1 = createPlayer "Power Rangers" 1
     let player2 = createPlayer  "Avengers" 2
@@ -342,7 +357,7 @@ let gameController () =
             match turns < 13 with
             | false -> stateMachine (state+1) p1 p2 field turns
             | _ ->
-                printfn "place cow in       turn = %d" turns
+                printfn "place cow on which node.      turn = %d" turns
                 let place = System.Console.ReadLine()
                 let playerPlace = placeCow place field p1
                 let h::p1CowsLeft = p1.cowsLeft
@@ -350,10 +365,20 @@ let gameController () =
                 let updatedPlayer1 = {p1 with cowsLeft = p1CowsLeft; cowsOnField = newCow::p1.cowsOnField}
                 printField playerPlace
                 // check with jeff when the node list occupied is updated cause mill method is failing due to that.
+                // THIS AS ONLY BEEN MADE FOR PLAYER 1 SO FAR
                 let q =CheckinMill (List.tryHead updatedPlayer1.cowsOnField) (field) (updatedPlayer1) 
-// will return a (bool*string List) that is if there is a mill and what row it is.
-                printfn " "
-                stateMachine state updatedPlayer1 p2 playerPlace (turns + 1)
+                match q with 
+                | 1,millRow -> 
+                 printfn "Can shoot: Which enemy cow do you choose write the node /n"
+                 let chosen = System.Console.ReadLine()
+                 let newHerd = changeCowMill millRow updatedPlayer1.cowsOnField 1
+                 let newPLayer1 = {updatedPlayer1 with cowsOnField = newHerd}
+                 let updateEnemy,newfield = shootCow chosen field p2
+                 printfn " "
+                 stateMachine state newPLayer1 updateEnemy newfield (turns+1)
+                | 0,_ -> 
+                 printfn " "
+                 stateMachine state updatedPlayer1 p2 playerPlace (turns + 1)
         | 1 -> printfn "2nd stage"
         | 2 -> printfn "super stage"
         | _ -> printfn "something went wrong with the game states"
