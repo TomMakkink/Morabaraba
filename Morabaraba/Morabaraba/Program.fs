@@ -342,6 +342,33 @@ let changeCowMill millRow fieldCows newMill =
     let newCow = {head with inMill = newMill}
     check rest tail (newCow::outList)
  check millRow fieldCows []
+
+ // Print out rules and a welcome for Morabaraba 
+let start () = printfn "Greetings fellow humans.
+
+            For many years the agressive and militant nature of cow has been documented 
+            and studied, and through the generations these studies have been condensed 
+            and widdled into a game played with stones and lines on the dirt.
+           
+            In the new age of harnessed electricity and 440ml coke bottles, we have build a new 
+            board out of strings and integers for you to do battle on, as your forefathers once
+            did. 
+            
+            Those who can harness the hyper-agressive and murderous nature of cows will quickly 
+            master the game, and those who cannot will be served as the thin cardboard stuff 
+            they put between a Mcdonalds bun. 
+           
+            Mills will be formed. Bovine blood will be spilled. Cows will fly.
+               
+            Friendships will be ruined. 
+          
+            If you are ready to go to cow war. Enter 1.
+            
+            If you wish to learn the rules of the game I speak of. Enter 2. 
+          
+            If you want to leave because this is weird. Enter 3.
+            "
+
    
 // this is our main game controller
 let gameController () =
@@ -385,6 +412,8 @@ let gameController () =
     stateMachine 0 player1 player2 fieldList 1
 [<EntryPoint>]
 let main argv =
+    start ()
+    let ans = System.Console.ReadLine()
     let game = gameController ()
     printfn "-=-=-=-=-=-=-=- END GAME -=-=-=-=-=-=-=-=-=-" 
     let halt = System.Console.ReadLine ()

@@ -52,3 +52,12 @@ C:\Users\Luke des Tombe\Desktop\Morabaraba\Morabaraba\Morabaraba\obj\Debug\Morab
 \\ict.ru.ac.za\DFS\UGHomes\g15d0548\Desktop\Morabaraba\Morabaraba\Morabaraba\bin\Debug\FSharp.Core.xml
 \\ict.ru.ac.za\DFS\UGHomes\g15d0548\Desktop\Morabaraba\Morabaraba\Morabaraba\obj\Debug\Morabaraba.exe
 \\ict.ru.ac.za\DFS\UGHomes\g15d0548\Desktop\Morabaraba\Morabaraba\Morabaraba\obj\Debug\Morabaraba.pdb
+\\ict.ru.ac.za\DFS\UGHomes\g15m0521\Desktop\Morabaraba\Morabaraba\Morabaraba\bin\Debug\Morabaraba.exe.config
+\\ict.ru.ac.za\DFS\UGHomes\g15m0521\Desktop\Morabaraba\Morabaraba\Morabaraba\bin\Debug\Morabaraba.XML
+\\ict.ru.ac.za\DFS\UGHomes\g15m0521\Desktop\Morabaraba\Morabaraba\Morabaraba\bin\Debug\Morabaraba.exe
+\\ict.ru.ac.za\DFS\UGHomes\g15m0521\Desktop\Morabaraba\Morabaraba\Morabaraba\bin\Debug\Morabaraba.pdb
+\\ict.ru.ac.za\DFS\UGHomes\g15m0521\Desktop\Morabaraba\Morabaraba\Morabaraba\bin\Debug\FSharp.Core.dll
+\\ict.ru.ac.za\DFS\UGHomes\g15m0521\Desktop\Morabaraba\Morabaraba\Morabaraba\bin\Debug\System.ValueTuple.dll
+\\ict.ru.ac.za\DFS\UGHomes\g15m0521\Desktop\Morabaraba\Morabaraba\Morabaraba\bin\Debug\FSharp.Core.xml
+\\ict.ru.ac.za\DFS\UGHomes\g15m0521\Desktop\Morabaraba\Morabaraba\Morabaraba\obj\Debug\Morabaraba.exe
+\\ict.ru.ac.za\DFS\UGHomes\g15m0521\Desktop\Morabaraba\Morabaraba\Morabaraba\obj\Debug\Morabaraba.pdb
