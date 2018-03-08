@@ -344,13 +344,13 @@ let changeCowMill millRow fieldCows newMill =
  check millRow fieldCows []
 
  // Print out rules and a welcome for Morabaraba 
-let startMessage () = printfn "Greetings fellow humans.
+let startMessage () = printfn "     Greetings fellow humans.
 
             For many years the agressive and militant nature of cow has been documented 
             and studied, and through the generations these studies have been condensed 
-            and widdled into a game played with stones and lines on the dirt.
+            and widdled into a game played with stones and lines on dirt.
            
-            In the new age of harnessed electricity and 440ml coke bottles, we have build a new 
+            In the new age of harnessed electricity and 440ml coke bottles, we have built a new 
             board out of strings and integers for you to do battle on, as your forefathers once
             did. 
             
@@ -408,9 +408,8 @@ let printRules ans =
     match ans with 
     | "Begin" -> ()
     | "Rules" -> rules () 
-    | _ -> ()
-
-
+    | "Flee!" -> printfn "You cannot flee coward! THIS IS COW WAR!!!!!!!!" 
+    | _ -> printfn "What words are these?" 
 
    
 // this is our main game controller
@@ -453,6 +452,8 @@ let gameController () =
         | 2 -> printfn "super stage"
         | _ -> printfn "something went wrong with the game states"
     stateMachine 0 player1 player2 fieldList 1
+
+
 [<EntryPoint>]
 let main argv =
     startMessage ()
