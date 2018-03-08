@@ -372,43 +372,46 @@ let startMessage () = printfn "     Greetings fellow humans.
 let rules () = printfn "The aim of Morabaraba is to get your opponent down to only 2 cows. 
 
 There are three main phases to the game: 
-1) Placing the cows. 
-2) Moving the cows. 
-3) Flying the cows. 
+    1) Placing the cows. 
+    2) Moving the cows. 
+    3) Flying the cows. 
 
 PLACING THE COWS:
-Each player starts off with 12 cows that they can place anywhere on the board. 
-Each turn one cows is placed, until all 12 cows have been placed on the board, then 
-the game moves on to the next phase: moving the cows. 
+    Each player starts off with 12 cows that they can place anywhere on the board. 
+    Each turn one cows is placed, until all 12 cows have been placed on the board, then 
+    the game moves on to the next phase: moving the cows. 
 
-Three cows in a row on the board (diagonal, horizontal or vertical) represents a mill. 
-When a mill is formed, mob syndrome immediately kicks in and the player who formed the mill 
-can 'shoot' or remove one of the cows from the other players team. Even if two mills are 
-formed, only one cow may be shot each round. 
+    Three cows in a row on the board (diagonal, horizontal or vertical) represents a mill. 
+    When a mill is formed, mob syndrome immediately kicks in and the player who formed the mill 
+    can 'shoot' or remove one of the cows from the other players team. Even if two mills are 
+    formed, only one cow may be shot each round. 
 
-Cows in a mill can not be shot. 
+    Cows in a mill can not be shot. 
 
-A cow once outside of a mill must wait a turn, before it is placed back into that same mill. 
+    A cow once outside of a mill must wait a turn, before it is placed back into that same mill. 
 
 MOVING THE COWS 
-Once all the cows have been placed on the board, cows can be moved to any empty adjacent intersection. 
+    Once all the cows have been placed on the board, cows can be moved to any empty adjacent intersection. 
 
 FLYING THE COWS
-When a player only has three cows left, the cows gain super powers, and can 'fly' or be placed anywhere 
-on the board. 
+    When a player only has three cows left, the cows gain super powers, and can 'fly' or be placed anywhere 
+    on the board. 
 
-Only the player will three cows will be allowed to fly. 
+    Only the player will three cows will be allowed to fly. 
 
-A win occurs if one opponent has no possible moves.
-A win occurs if a player has just two cows.
-If either player has only three cows and neither player shoots a cow within ten moves, the game is drawn."
+    A win occurs if one opponent has no possible moves.
+    A win occurs if a player has just two cows.
+    If either player has only three cows and neither player shoots a cow within ten moves, the game is drawn.
+    
+                                                                                Source: Wikipedia Morabaraba
+                                                                    https://en.wikipedia.org/wiki/Morabaraba"
 
 
 let printRules ans = 
     match ans with 
     | "Begin" -> ()
     | "Rules" -> rules () 
-    | "Flee!" -> printfn "You cannot flee coward! THIS IS COW WAR!!!!!!!!" 
+    | "Flee!" -> printfn "That's cowardice! THIS IS COW WAR!!!!!!!!" 
     | _ -> printfn "What words are these?" 
 
    
