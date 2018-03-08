@@ -344,7 +344,7 @@ let changeCowMill millRow fieldCows newMill =
  check millRow fieldCows []
 
  // Print out rules and a welcome for Morabaraba 
-let start () = printfn "Greetings fellow humans.
+let startMessage () = printfn "Greetings fellow humans.
 
             For many years the agressive and militant nature of cow has been documented 
             and studied, and through the generations these studies have been condensed 
@@ -362,12 +362,55 @@ let start () = printfn "Greetings fellow humans.
                
             Friendships will be ruined. 
           
-            If you are ready to go to cow war. Enter 1.
+            If you are ready to go to cow war. Type: Begin.
             
-            If you wish to learn the rules of the game I speak of. Enter 2. 
+            If you wish to learn the rules of the game I speak of. Type: Rules. 
           
-            If you want to leave because this is weird. Enter 3.
+            If you want to leave because this is weird. Type: Flee!.
             "
+
+let rules () = printfn "The aim of Morabaraba is to get your opponent down to only 2 cows. 
+
+There are three main phases to the game: 
+1) Placing the cows. 
+2) Moving the cows. 
+3) Flying the cows. 
+
+PLACING THE COWS:
+Each player starts off with 12 cows that they can place anywhere on the board. 
+Each turn one cows is placed, until all 12 cows have been placed on the board, then 
+the game moves on to the next phase: moving the cows. 
+
+Three cows in a row on the board (diagonal, horizontal or vertical) represents a mill. 
+When a mill is formed, mob syndrome immediately kicks in and the player who formed the mill 
+can 'shoot' or remove one of the cows from the other players team. Even if two mills are 
+formed, only one cow may be shot each round. 
+
+Cows in a mill can not be shot. 
+
+A cow once outside of a mill must wait a turn, before it is placed back into that same mill. 
+
+MOVING THE COWS 
+Once all the cows have been placed on the board, cows can be moved to any empty adjacent intersection. 
+
+FLYING THE COWS
+When a player only has three cows left, the cows gain super powers, and can 'fly' or be placed anywhere 
+on the board. 
+
+Only the player will three cows will be allowed to fly. 
+
+A win occurs if one opponent has no possible moves.
+A win occurs if a player has just two cows.
+If either player has only three cows and neither player shoots a cow within ten moves, the game is drawn."
+
+
+let printRules ans = 
+    match ans with 
+    | "Begin" -> ()
+    | "Rules" -> rules () 
+    | _ -> ()
+
+
 
    
 // this is our main game controller
@@ -412,8 +455,9 @@ let gameController () =
     stateMachine 0 player1 player2 fieldList 1
 [<EntryPoint>]
 let main argv =
-    start ()
+    startMessage ()
     let ans = System.Console.ReadLine()
+    printRules ans 
     let game = gameController ()
     printfn "-=-=-=-=-=-=-=- END GAME -=-=-=-=-=-=-=-=-=-" 
     let halt = System.Console.ReadLine ()
