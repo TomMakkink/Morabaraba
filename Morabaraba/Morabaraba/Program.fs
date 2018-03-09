@@ -451,20 +451,30 @@ FLYING THE COWS
 let isValidEndNode startNode endNode = 
     List.exists (fun x -> x = endNode.Name) startNode.neighbours 
 
-let moveCowToNewPos startingNode endNode =
+let moveCowToNewPos startingNode endNode field =
     let newNode = {endNode with Occupied = true; team = startingNode.team; cow = startingNode.cow} 
     let oldNode = {startingNode with Occupied = false; team = 0; cow =  {Name = "[]";Position = "NP"; isOP = false; isOnBoard = false; isAlive = false; inMill = 0 }}
-    () 
+    let newField = 
+        List.map (fun x -> 
+        match x.number = startingNode.number with 
+        | true -> oldNode
+        | false -> 
+            match x.number = endNode.number with
+            | true -> newNode
+            | false -> x 
+        ) field
+    newField
 
-let moveCows startingNode endNode =
+let moveCows startingNode endNode (field: node List) =
     match isValidEndNode startingNode endNode && endNode.Occupied = false with 
-    | true -> moveCowToNewPos startingNode endNode
-    | _ -> ()
+    | true -> moveCowToNewPos startingNode endNode field
+    | _ -> field
 
-    // Count the number of cows each player has on the board
-let numberOfPlayerCowsOnBoard (fieldList: node list) = 
+
+// Count the number of cows each player has on the board
+let numOfCowsPlayerHasOnBoard fieldList player = 
     List.fold(fun state fieldNode -> 
-        match fieldNode.Occupied with 
+        match fieldNode.team = player with 
         | true -> (state + 1)
         | _ -> state
     ) 0 fieldList
@@ -479,9 +489,17 @@ let gameController () =
     let print = printField fieldList
 
     let rec stateMachine state (p1:Player) (p2:Player) field turns = 
+        // ADDED...
+        // Decide whose turn it is at the beginning of the method
+        let playerTurn = 
+            match turns % 2 = 0 with
+            | false -> p1,p2
+            | _ -> p2,p1
+        
+        
         match state with 
         | 0 -> //0 is the placing stage
-            match turns < 3 with
+            match turns < 7 with
             | false -> stateMachine (state+1) p1 p2 field turns
             | _ ->
                 match turns % 2 = 0 with 
@@ -500,7 +518,7 @@ let gameController () =
                     | 1,millRow -> 
                          printfn "Can shoot: Which enemy cow do you choose write the node"
                          let chosen = System.Console.ReadLine()
-                         let newHerd = changeCowMill millRow updatedPlayer1.cowsOnField 1
+                         let newHerd = changeCowMill (List.sortDescending millRow) (List.sortBy (fun s-> s.Position) updatedPlayer1.cowsOnField) 1
                          let newPLayer1 = {updatedPlayer1 with cowsOnField = newHerd}
                          let updateEnemy,newfield = shootCow chosen playerPlace p2
                          printfn " "
@@ -525,7 +543,7 @@ let gameController () =
                     | 1,millRow -> 
                          printfn "Can shoot: Which enemy cow do you choose write the node"
                          let chosen = System.Console.ReadLine()
-                         let newHerd = changeCowMill millRow updatedPlayer2.cowsOnField 1
+                         let newHerd = changeCowMill (List.sortDescending millRow) updatedPlayer2.cowsOnField 1
                          let newPLayer2 = {updatedPlayer2 with cowsOnField = newHerd}
                          let updateEnemy,newfield = shootCow chosen player2Place p1
                          printfn " "
@@ -536,7 +554,8 @@ let gameController () =
                          printfn " "
                          stateMachine state p1 updatedPlayer2 player2Place (turns + 1)
         | 1 -> 
-            match (numberOfPlayerCowsOnBoard field) <= 3 with 
+            let currentPlayer,enemy = playerTurn
+            match (numOfCowsPlayerHasOnBoard field currentPlayer.Team) <= 0 with 
             | true -> stateMachine (state+1) p1 p2 field turns
             | _ ->
                 printfn "2nd stage - You will now move cows on to any adjacent, available place.
@@ -546,16 +565,21 @@ let gameController () =
                             e.g. A1 B3"
                 let splitLine = (fun (line : string) -> Seq.toList (line.Split ' '))
                 let playerMove = System.Console.ReadLine()
-                match splitLine playerMove with 
-                | [startPoint;endPoint] -> 
-                     let startNode = GetNodeFromName startPoint field
-                     let endNode = GetNodeFromName endPoint field
-                     moveCows startNode endNode
-                | _ -> failwith "That is not a valid move."
-
+                let move = splitLine playerMove
+                let newField = 
+                    match move with 
+                    | [startPoint;endPoint] -> 
+                    // Think about storing this in a tuple
+                         let startNode = GetNodeFromName startPoint field
+                         let endNode = GetNodeFromName endPoint field
+                         moveCows startNode endNode field
+                    | _ -> failwith "That is not a valid move."
+               
                // How to update the overall field? 
                // How to print the field?
- 
+                printField newField 
+                stateMachine state currentPlayer enemy newField (turns+1)
+
         | 2 -> printfn "super stage"
         | _ -> printfn "something went wrong with the game states"
     stateMachine 0 player1 player2 fieldList 1
