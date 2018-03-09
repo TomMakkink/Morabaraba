@@ -201,25 +201,32 @@ let CheckMillNumber listOfRows cowsToCheck =
 
 
 // this method will return a (bool*string List) which is a bool to show if a mill formed or not and the row.
-let checkCowsInRow millNodeLists mainNodeList cowsOnField =
- let rec check (nodeList: string List List)  =
+let checkCowsInRow millNodeLists mainNodeList cowsOnField  =
+ let rec check (nodeList: string List List) index outList =
   match nodeList with 
-  | [] -> false,[]
+  | [] -> false,outList
   | h::rest ->
    let fir::sec::third::_ = h
    let firNode = GetNodeFromName fir mainNodeList
    let secNode = GetNodeFromName sec mainNodeList
    let thirdNode = GetNodeFromName third mainNodeList
    match firNode.Occupied && secNode.Occupied && thirdNode.Occupied with 
-   | false -> check rest 
+   | false -> check rest (index + 1) outList
    | true ->
     match firNode.team = secNode.team && thirdNode.team = secNode.team with 
-    | false ->  check rest 
+    | false ->  check rest (index + 1) outList
     | true -> 
-     match CheckMillNumber h cowsOnField with 
-     | false,_ -> check rest
-     | true,x -> true,x
- check millNodeLists 
+        match firNode.cow.inMill<>1 && secNode.cow.inMill<>1 && thirdNode.cow.inMill <>1 with 
+        | false -> check rest (index+1) outList
+        | true ->
+             match CheckMillNumber h cowsOnField, index with 
+             | (false,_), _ -> check rest (index + 1) outList
+             | (true,x), 2 -> 
+                match List.length millNodeLists = 2 with 
+                    | false -> check rest (index+1) (x::outList)
+                    | true -> true,(x::outList) 
+             | (true,x), _ -> check rest (index+1) (x::outList)
+ check millNodeLists 0 []
 
 
 // CHECK TO SEE IF I DON"T NEED THIS METHOD
@@ -237,7 +244,10 @@ let CheckinMill cow nodeList player =
      let millNodes = nodesInARow cows.Position
      let ifCows= checkCowsInRow millNodes nodeList player.cowsOnField
      match ifCows with 
-     | false,_ -> 0,[]
+     | false,[] -> 0,[]
+     | false,rowMill -> 
+         printfn "A mill was formed \n"
+         1,rowMill
      | true,millrow ->
       printfn "A mill was formed \n"
       1,millrow
@@ -383,6 +393,16 @@ let changeCowMill millRow fieldCows newMill =
     check rest tail (newCow::outList)
  check millRow  (List.rev fieldCows) []
 
+ // this will now call changeCowMill from with a rec function and it will still only return a updated Cowfield list :)
+let preChangeCowMill millrow fieldCows newMill = 
+    let rec check nodeInMillNames oldHerd outlist = 
+        match nodeInMillNames with 
+            | [] -> outlist
+            | h::rest -> 
+                let newherd = changeCowMill (List.sortDescending h) (List.sortBy (fun s-> s.Position) oldHerd) newMill
+                check rest newherd newherd
+    check millrow fieldCows []
+
  // Print out rules and a welcome for Morabaraba 
 let startMessage () = printfn "     Greetings fellow humans.
 
@@ -499,7 +519,7 @@ let gameController () =
         
         match state with 
         | 0 -> //0 is the placing stage
-            match turns < 7 with
+            match turns < 19 with
             | false -> stateMachine (state+1) p1 p2 field turns
             | _ ->
                 match turns % 2 = 0 with 
@@ -518,7 +538,7 @@ let gameController () =
                     | 1,millRow -> 
                          printfn "Can shoot: Which enemy cow do you choose write the node"
                          let chosen = System.Console.ReadLine()
-                         let newHerd = changeCowMill (List.sortDescending millRow) (List.sortBy (fun s-> s.Position) updatedPlayer1.cowsOnField) 1
+                         let newHerd = preChangeCowMill millRow updatedPlayer1.cowsOnField 1
                          let newPLayer1 = {updatedPlayer1 with cowsOnField = newHerd}
                          let updateEnemy,newfield = shootCow chosen playerPlace p2
                          printfn " "
@@ -543,7 +563,7 @@ let gameController () =
                     | 1,millRow -> 
                          printfn "Can shoot: Which enemy cow do you choose write the node"
                          let chosen = System.Console.ReadLine()
-                         let newHerd = changeCowMill (List.sortDescending millRow) updatedPlayer2.cowsOnField 1
+                         let newHerd = preChangeCowMill millRow updatedPlayer2.cowsOnField 1
                          let newPLayer2 = {updatedPlayer2 with cowsOnField = newHerd}
                          let updateEnemy,newfield = shootCow chosen player2Place p1
                          printfn " "
