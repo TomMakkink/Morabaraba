@@ -35,6 +35,13 @@ type node = {
     number: int
     cow : Cow
     }
+
+type gameState = 
+    | PLACING
+    | MOVING 
+    | FLYING
+
+
 // this gives both players their cows
 let givePlayerCows  (myList: Cow list) team=
     let rec giveCows (playerFieldCows: Cow list) acc =
@@ -54,11 +61,14 @@ let givePlayerCows  (myList: Cow list) team=
                 giveCows fieldCows (acc+1)
             | _ -> failwith "lol thats not going to work"
     giveCows myList 0
+
+
 // this creates the players at the begining of the game
 let createPlayer (name:string) team = 
      let player1 = {Name = name; cowsLeft = givePlayerCows ([]) team ; isTurn = false; cowsOnField = []; Team = team}
      player1
 // this creates each new node and returns them in a giant list.
+
 
 let createNodeNieghbours nodeName =
  match nodeName with 
@@ -87,6 +97,7 @@ let createNodeNieghbours nodeName =
  | "g3" -> ["g0"; "g6"; "f3"]
  | "g6" -> ["g3"; "f5"; "d6"]
  | _ -> failwith "What did we do wrong..."
+
 
 let createNewNode node: node = 
     let newPoint =
@@ -134,8 +145,10 @@ let createNewNode node: node =
      }
 // this function returns the nieghbours of the node name put in it returns a string list though.
 
+
 // this method takes in a node name and returns the actual node. 
 let GetNodeFromName nodeName nodeList =
+// Can use List.trfFind
  let rec getNode (tempNodeList: node List) = 
   match tempNodeList with 
   | [] -> failwith "This is not the node your looking for"
@@ -144,6 +157,8 @@ let GetNodeFromName nodeName nodeList =
    | true -> h
    | false -> getNode rest
  getNode nodeList
+
+
 // this funtion will return a list of string lists and these will hold all the combos with that paricular node the cow is on
 let nodesInARow nodeName =
  match nodeName with 
@@ -172,6 +187,8 @@ let nodesInARow nodeName =
  | "g3" -> [["g0";"g3";"g6"];["g3";"f3";"e3"]]
  | "g6" -> [["g0";"g3";"g6"];["g6";"d6";"a6"];["g6";"f5";"e4"]]
  | _ -> failwith "This cow is all alone"
+
+
 // this method will check each cows mill number in the given row to see if they are allowed to form a mill
 let CheckMillNumber listOfRows cowsToCheck = 
   let h::m::t::_ = listOfRows
@@ -181,6 +198,8 @@ let CheckMillNumber listOfRows cowsToCheck =
   match (cow1.inMill = 0 && cow2.inMill = 0) && cow3.inMill =0 with 
   | true -> true, listOfRows
   | _ -> false,listOfRows
+
+
 // this method will return a (bool*string List) which is a bool to show if a mill formed or not and the row.
 let checkCowsInRow millNodeLists mainNodeList cowsOnField =
  let rec check (nodeList: string List List)  =
@@ -201,6 +220,8 @@ let checkCowsInRow millNodeLists mainNodeList cowsOnField =
      | false,_ -> check rest
      | true,x -> true,x
  check millNodeLists 
+
+
 // CHECK TO SEE IF I DON"T NEED THIS METHOD
 // this method will use the method checkCowsInRow to check if any of the combo rows are true and return (bool*string List)
 let CheckinMill cow nodeList player = 
@@ -220,6 +241,8 @@ let CheckinMill cow nodeList player =
      | true,millrow ->
       printfn "A mill was formed \n"
       1,millrow
+
+
 // this is the method that returns the updated lists.      
 let shooting (deadCow:Cow) (herdLeft: Cow List) =
  let rec check (inList: Cow List) outList = 
@@ -230,6 +253,8 @@ let shooting (deadCow:Cow) (herdLeft: Cow List) =
    | true -> check rest outList
    | false -> check rest (h::outList)
  check herdLeft []
+
+
 // this will change the node of the now dead cow to unOccupied and also the name of the cow to default
 let updateSadNode newNodes oldNodes = 
  let rec check inList outList =
@@ -242,6 +267,8 @@ let updateSadNode newNodes oldNodes =
     check rest (newNode::outList)
    | false -> check rest (h::outList)
  check oldNodes []  
+
+
 // This will return an updated enemy cowsleft and cowsOnField and will not allow friendly fire also returns an updated nodeList
 // still need to call the board update as well as make sure the cow is dead
 let shootCow nodeName mainNodeList enemy = 
@@ -257,6 +284,8 @@ let shootCow nodeName mainNodeList enemy =
    let updateEnemy = {enemy with cowsOnField = newCowsOnField}
    let NewMainNode = updateSadNode actualNode mainNodeList
    updateEnemy,NewMainNode
+
+
 // this creates all the nodes and puts them all into one list.
 let createNodeList =
     let initPoint = {xCoord=0; yCoord="a";}
@@ -280,6 +309,8 @@ let createNodeList =
             createField newNode (newNode::listNode) (acc + 1)
     
     createField initNode [initNode] 0
+
+
 // this just prints the game boards.
 let printField (nodeList: node List) =
     printfn "   0  1  2         3      4  5  6"
@@ -315,6 +346,8 @@ let printField (nodeList: node List) =
             | 21 | 22 -> printf "%s------------" x.cow.Name 
             | 23 -> printfn "%s" x.cow.Name 
     ) nodeList
+
+
 // this is where each node.
 let updateList tNode inList outList player =
     let rec update inList outList  =
@@ -326,6 +359,8 @@ let updateList tNode inList outList player =
                       update tail newOut 
             | false -> update tail (head::outList) 
     update inList outList
+
+
 // this places the cows on the field
 let placeCow position fieldList player =
     let targetNode = List.find (fun x -> x.Name = position) fieldList
@@ -413,9 +448,19 @@ FLYING THE COWS
                                                                     
     Type Begin to start, or flee for COWards.                                                                "
 
+let isValidEndNode startNode endNode = 
+    List.exists (fun x -> x = endNode.Name) startNode.neighbours 
 
-                                                       
-// this is our main game controller
+let moveCowToNewPos startingNode endNode =
+    let newNode = {endNode with Occupied = true; team = startingNode.team; cow = startingNode.cow} 
+    let oldNode = {startingNode with Occupied = false; team = 0; cow =  {Name = "[]";Position = "NP"; isOP = false; isOnBoard = false; isAlive = false; inMill = 0 }}
+    () 
+
+let moveCows startingNode endNode =
+    match isValidEndNode startingNode endNode && endNode.Occupied = false with 
+    | true -> moveCowToNewPos startingNode endNode
+    | _ -> ()
+                                                   
 let gameController () =
     System.Console.Clear()
     let player1 = createPlayer "Power Rangers" 1
@@ -427,7 +472,7 @@ let gameController () =
     let rec stateMachine state (p1:Player) (p2:Player) field turns = 
         match state with 
         | 0 -> //0 is the placing stage
-            match turns < 25 with
+            match turns < 3 with
             | false -> stateMachine (state+1) p1 p2 field turns
             | _ ->
                 match turns % 2 = 0 with 
@@ -481,26 +526,42 @@ let gameController () =
                     | 0,_ -> 
                          printfn " "
                          stateMachine state p1 updatedPlayer2 player2Place (turns + 1)
-        | 1 -> printfn "2nd stage" 
+        | 1 -> printfn "2nd stage - You will now move cows on to any adjacent, available place.
+                        Please specific the node you want to move first, and then the place 
+                        you want to move it to. 
+                        
+                        e.g. A1 B3"
+               let splitLine = (fun (line : string) -> Seq.toList (line.Split ' '))
+               let playerMove = System.Console.ReadLine()
+               match splitLine playerMove with 
+               | [startPoint;endPoint] -> 
+                    let startNode = GetNodeFromName startPoint field
+                    let endNode = GetNodeFromName endPoint field
+                    moveCows startNode endNode
+               | _ -> failwith "That is not a valid move."
+               // How to print the field?
+
         | 2 -> printfn "super stage"
         | _ -> printfn "something went wrong with the game states"
     stateMachine 0 player1 player2 fieldList 1
 
-let rec printRules () = 
+
+let rec beginGame () = 
     let ans = System.Console.ReadLine()
     match ans.ToLower() with 
     | "begin" -> gameController ()
     | "rules" -> rules ()
-                 printRules ()
+                 beginGame ()
     | "flee!" | "flee" -> printfn "That's cowardice! THIS IS COW WAR!!!!!!!!" 
-                          printRules ()
+                          beginGame ()
     | _ -> printfn "What words are these?"
-           printRules ()
+           beginGame  ()
+
 
 [<EntryPoint>]
 let main argv =
     startMessage ()
-    printRules () 
+    beginGame  () 
     printfn "-=-=-=-=-=-=-=- END GAME -=-=-=-=-=-=-=-=-=-" 
     let halt = System.Console.ReadLine ()
     printfn "%A" argv
