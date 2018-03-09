@@ -460,7 +460,16 @@ let moveCows startingNode endNode =
     match isValidEndNode startingNode endNode && endNode.Occupied = false with 
     | true -> moveCowToNewPos startingNode endNode
     | _ -> ()
-                                                   
+
+    // Count the number of cows each player has on the board
+let numberOfPlayerCowsOnBoard (fieldList: node list) = 
+    List.fold(fun state fieldNode -> 
+        match fieldNode.Occupied with 
+        | true -> (state + 1)
+        | _ -> state
+    ) 0 fieldList
+ 
+ 
 let gameController () =
     System.Console.Clear()
     let player1 = createPlayer "Power Rangers" 1
@@ -526,21 +535,27 @@ let gameController () =
                     | 0,_ -> 
                          printfn " "
                          stateMachine state p1 updatedPlayer2 player2Place (turns + 1)
-        | 1 -> printfn "2nd stage - You will now move cows on to any adjacent, available place.
-                        Please specific the node you want to move first, and then the place 
-                        you want to move it to. 
+        | 1 -> 
+            match (numberOfPlayerCowsOnBoard field) <= 3 with 
+            | true -> stateMachine (state+1) p1 p2 field turns
+            | _ ->
+                printfn "2nd stage - You will now move cows on to any adjacent, available place.
+                            Please specific the node you want to move first, and then the place 
+                            you want to move it to. 
                         
-                        e.g. A1 B3"
-               let splitLine = (fun (line : string) -> Seq.toList (line.Split ' '))
-               let playerMove = System.Console.ReadLine()
-               match splitLine playerMove with 
-               | [startPoint;endPoint] -> 
-                    let startNode = GetNodeFromName startPoint field
-                    let endNode = GetNodeFromName endPoint field
-                    moveCows startNode endNode
-               | _ -> failwith "That is not a valid move."
-               // How to print the field?
+                            e.g. A1 B3"
+                let splitLine = (fun (line : string) -> Seq.toList (line.Split ' '))
+                let playerMove = System.Console.ReadLine()
+                match splitLine playerMove with 
+                | [startPoint;endPoint] -> 
+                     let startNode = GetNodeFromName startPoint field
+                     let endNode = GetNodeFromName endPoint field
+                     moveCows startNode endNode
+                | _ -> failwith "That is not a valid move."
 
+               // How to update the overall field? 
+               // How to print the field?
+ 
         | 2 -> printfn "super stage"
         | _ -> printfn "something went wrong with the game states"
     stateMachine 0 player1 player2 fieldList 1
