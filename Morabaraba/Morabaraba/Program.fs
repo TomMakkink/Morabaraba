@@ -564,8 +564,6 @@ let gameController () =
                 let newCow = {Name =h.Name; Position = place; isAlive = h.isAlive; isOnBoard = true; isOP=h.isOP; inMill = h.inMill}
                 let updatedPlayer = {currentPlayer with cowsLeft = CowsLeft; cowsOnField = newCow::currentPlayer.cowsOnField}
                 printField playerPlace
-                // check with jeff when the node list occupied is updated cause mill method is failing due to that.
-                // THIS AS ONLY BEEN MADE FOR PLAYER 1 SO FAR
                 let q =CheckinMill (List.tryHead updatedPlayer.cowsOnField) (playerPlace) (updatedPlayer) 
                 match q with 
                 | 1,millRow -> 
@@ -582,6 +580,8 @@ let gameController () =
                         printfn " "
                         stateMachine state enemy updatedPlayer playerPlace (turns + 1)
         | 1 -> 
+            printfn ""
+            printfn "stagem 2:"
             match (numOfCowsPlayerHasOnBoard field currentPlayer.Team) <= 3 with 
             | true -> stateMachine (state+1) currentPlayer enemy field turns
             | _ ->
@@ -597,7 +597,6 @@ let gameController () =
                 let move = splitLine playerMove
                 match move with 
                 | [startPoint;endPoint] -> 
-                // Think about storing this in a tuple
                         let startNode = GetNodeFromName startPoint field
                         let endNode = GetNodeFromName endPoint field
                         let cowToMove = List.find (fun (x:Cow)-> startNode.Name = x.Position) currentPlayer.cowsOnField
@@ -636,7 +635,8 @@ let gameController () =
                          
                 | _ -> failwith "That is not a valid move."
         | 2 -> 
-            printfn "i will believe that when cows fly ... oh wait :/"
+            printfn ""
+            printfn "Stage 3: "
             match List.length currentPlayer.cowsOnField < 3 with 
             | true -> stateMachine (state + 1) currentPlayer enemy field turns
             | false ->
@@ -644,10 +644,9 @@ let gameController () =
                 //let powerPlayer =
                 match List.length currentPlayer.cowsOnField = 3 with
                 | true ->
-                    printfn "%s cows can fly to any free node now
-    its like moving a cow but they can go to any free node" currentPlayer.Name
+                    printfn "%ss cows can fly to any free node now
+its like moving a cow but they can go to any free node" currentPlayer.Name
                     let EnlightedTheBeasts = List.map ( fun (x:Cow) -> {x with isOP = true}) currentPlayer.cowsOnField 
-                    List.iter ( fun (x:Cow) -> printfn "%s isOP = %b" x.Name x.isOP) EnlightedTheBeasts // just a test to check if iv Opped the cows
                     printfn " "
 
                     let powerdPlayer = {currentPlayer with cowsOnField = EnlightedTheBeasts}
