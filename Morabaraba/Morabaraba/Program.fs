@@ -323,40 +323,70 @@ let createNodeList =
 
 // this just prints the game boards.
 let printField (nodeList: node List) =
+    Console.ForegroundColor<-ConsoleColor.Cyan
     printfn "   0  1  2        3       4  5  6"
     printf "a  "
     List.iteri ( fun i x -> 
+            let printColor team prefix suffix =
+                match x.cow.inMill = 1 with
+                | true -> printf "%s" prefix
+                          Console.ForegroundColor<-ConsoleColor.White
+                          printf "%s" x.cow.Name
+                          Console.ForegroundColor<-ConsoleColor.Cyan
+                          printf "%s" suffix
+                | false ->
+                    match team with 
+                        | 0 -> printf "%s" prefix 
+                               Console.ForegroundColor<-ConsoleColor.Cyan
+                               printf "%s%s" x.cow.Name suffix
+                        | 1 -> printf "%s" prefix 
+                               Console.ForegroundColor<-ConsoleColor.Yellow
+                               printf "%s" x.cow.Name
+                               Console.ForegroundColor<-ConsoleColor.Cyan
+                               printf "%s" suffix
+                        | 2 -> printf "%s" prefix 
+                               Console.ForegroundColor<-ConsoleColor.Green
+                               printf "%s" x.cow.Name
+                               Console.ForegroundColor<-ConsoleColor.Cyan
+                               printf "%s" suffix
             match i with 
-            | 0 | 1 -> printf "%s------------" x.cow.Name
-            | 2 -> printfn "%s   " x.cow.Name 
+            | 0 | 1 -> printColor x.team "" "------------"
+            | 2 -> printColor x.team "" "   "
+                   printfn ""
                    printfn "   | \            |           / |"
-            | 3 -> printf "b  |  %s---------" x.cow.Name
-            | 4 -> printf "%s---------" x.cow.Name 
-            | 5 -> printfn "%s  |" x.cow.Name 
+            | 3 -> printColor x.team "b  |  " "---------" 
+            | 4 -> printColor x.team "" "---------"
+            | 5 -> printColor x.team "" "  |" 
+                   printfn ""
                    printfn "   |  | \         |        / |  |"
-            | 6 -> printf "c  |  |  %s------" x.cow.Name
-            | 7 -> printf "%s------" x.cow.Name 
-            | 8 -> printfn "%s  |  |" x.cow.Name 
+            | 6 -> printColor x.team "c  |  |  " "------"
+            | 7 -> printColor x.team "" "------"
+            | 8 -> printColor x.team "" "  |  |"
+                   printfn ""
                    printfn "   |  |  |                |  |  |"
                    printf "d  "
-            | 9 | 10 -> printf "%s-" x.cow.Name 
-            | 11 -> printf "%s              " x.cow.Name 
-            | 12 | 13 -> printf "%s-" x.cow.Name 
-            | 14 -> printfn "%s" x.cow.Name 
+            | 9 | 10 -> printColor x.team "" "-"
+            | 11 -> printColor x.team "" "              "
+            | 12 | 13 -> printColor x.team "" "-"
+            | 14 -> printColor x.team "" ""
+                    printfn "" 
                     printfn "   |  |  |                |  |  |"
-            | 15 -> printf "e  |  |  %s------" x.cow.Name 
-            | 16 -> printf "%s------" x.cow.Name 
-            | 17 -> printfn "%s  |  |" x.cow.Name 
+            | 15 -> printColor x.team "e  |  |  " "------"  
+            | 16 -> printColor x.team "" "------" 
+            | 17 -> printColor x.team "" "  |  |" 
+                    printfn ""
                     printfn "   |  | /         |        \ |  |"
-            | 18 -> printf "f  |  %s---------" x.cow.Name 
-            | 19 -> printf "%s---------" x.cow.Name 
-            | 20 -> printfn "%s  |" x.cow.Name 
+            | 18 -> printColor x.team "f  |  " "---------"
+            | 19 -> printColor x.team "" "---------"  
+            | 20 -> printColor x.team "" "  |"  
+                    printfn ""
                     printfn "   | /            |           \ |"
                     printf "g  "
-            | 21 | 22 -> printf "%s------------" x.cow.Name 
-            | 23 -> printfn "%s" x.cow.Name 
+            | 21 | 22 -> printColor x.team "" "------------"  
+            | 23 -> printColor x.team "" ""
+                    printfn ""
     ) nodeList
-
+    Console.ForegroundColor<-ConsoleColor.White
 
 // this is where each node.
 let updateList tNode inList outList player =
@@ -407,21 +437,13 @@ let preChangeCowMill millrow fieldCows newMill =
  // Print out rules and a welcome for Morabaraba 
 let startMessage () = printfn "     Greetings fellow humans.
 
-   /\___/\    For many years the agressive and militant nature of cow has been documented 
-  (  .  . )   and studied, and through the generations these studies have been condensed 
-   |     |    and widdled into a game played with stones and lines on dirt.
-   |  '' |    
-   \ === /    In the new age of harnessed electricity and 440ml coke bottles, we have built a new 
-    ^^^^^     board out of strings and integers for you to do battle on, as your forefathers once
-              did.                                #+    
-                      ___________               #        
-                      | never let|            ##    
-                      | go jack /            #  
-                       \------\|       _____||___   
-                              \o/     /][][][][][\          
-                             (>=====================<)      
-                    ~\o/~~~~~~\~~~~~~~~~~~~~~~~~~~/~~~~~~~~~~\o/~~~~~   
-                    ~~~~         (o/    ~~~~~   ~ ~~~~~~  ~   ~~~~  ~       
+            For many years the agressive and militant nature of cow has been documented 
+            and studied, and through the generations these studies have been condensed 
+            and widdled into a game played with stones and lines on dirt.
+      
+            In the new age of harnessed electricity and 440ml coke bottles, we have built a new 
+            board out of strings and integers for you to do battle on, as your forefathers once
+            did.                                     
                     
             Those who can harness the hyper-agressive and murderous nature of cows will quickly 
             master the game, and those who cannot will be served as the thin cardboard stuff 
@@ -551,11 +573,11 @@ let gameController () =
                         let chosen = System.Console.ReadLine()
                         let newHerd = preChangeCowMill millRow updatedPlayer.cowsOnField 1
                         let newPlayer = {updatedPlayer with cowsOnField = newHerd}
-                        let updateEnemy,newfield = shootCow chosen playerPlace enemy
+                        let updateEnemy,field = shootCow chosen playerPlace enemy
                         printfn " "
-                        printField newfield
+                        printField field
                         printfn " "
-                        stateMachine state updateEnemy newPlayer newfield (turns+1)
+                        stateMachine state updateEnemy newPlayer field (turns+1)
                 | 0,_ -> 
                         printfn " "
                         stateMachine state enemy updatedPlayer playerPlace (turns + 1)
@@ -607,7 +629,6 @@ let gameController () =
                             printField newfield
                             printfn " "
                             stateMachine state updateEnemy newPlayer newfield (turns+1)
-                            //stateMachine state enemy currentPlayer updatedField (turns + 1)
                         | 0,_ -> 
                             printfn " "
                             stateMachine state enemy currentPlayer updatedField (turns + 1)
