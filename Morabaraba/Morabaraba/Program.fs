@@ -40,110 +40,7 @@ type gameState =
     | PLACING
     | MOVING 
     | FLYING
-
-
-// this gives both players their cows
-let givePlayerCows  (myList: Cow list) team=
-    let rec giveCows (playerFieldCows: Cow list) acc =
-        match playerFieldCows.Length with
-        | 12 ->List.rev playerFieldCows
-        | _ -> 
-            match team with 
-            | 1 ->
-                let newCow = {Name = ("R" + (string acc));Position = "NP"; isOP = false; isOnBoard = false; isAlive = true; inMill = 0 }
-                let name = newCow.Name
-                let fieldCows = newCow::playerFieldCows
-                giveCows fieldCows (acc+1)
-            | 2 ->
-                let newCow = {Name = ("B" + (string acc));Position = "NP"; isOP = false; isOnBoard=false; isAlive = true; inMill = 0}
-                let name = newCow.Name
-                let fieldCows = newCow::playerFieldCows
-                giveCows fieldCows (acc+1)
-            | _ -> failwith "lol thats not going to work"
-    giveCows myList 0
-
-
-// this creates the players at the begining of the game
-let createPlayer (name:string) team = 
-     let player1 = {Name = name; cowsLeft = givePlayerCows ([]) team ; isTurn = false; cowsOnField = []; Team = team}
-     player1
-// this creates each new node and returns them in a giant list.
-
-
-let createNodeNieghbours nodeName =
- match nodeName with 
- | "a0" -> ["a3";"d0";"b1"]
- | "a3" -> ["a0"; "b3"; "a6"]
- | "a6" -> ["a3"; "d6"; "b5"]
- | "b1" -> ["a0"; "c2"; "d1"; "b3"]
- | "b3" -> ["a3"; "c3"; "b1"; "b5"]
- | "b5" -> ["a6"; "c4"; "b3"; "d5"]
- | "c2" -> ["b1"; "c3"; "d2"]
- | "c3" -> ["c2"; "c4"; "b3"]
- | "c4" -> ["c3"; "b5"; "d4"]
- | "d0" -> ["d1"; "a0"; "g0"]
- | "d1" -> ["d0"; "b1"; "d2"; "f1";]
- | "d2" -> ["d1"; "c2"; "e2"]
- | "d4" -> ["d5"; "c4"; "e4"]
- | "d5" -> ["d4"; "d6"; "b5"; "f5"]
- | "d6" -> ["d5"; "a6"; "g6"]
- | "e2" -> ["f1"; "e3"; "d2"]
- | "e3" -> ["e2"; "e4"; "f3"]
- | "e4" -> ["e3"; "f5"; "d4"]
- | "f1" -> ["d1"; "f3"; "e2"; "g0"]
- | "f3" -> ["f1"; "e3"; "g3"; "f5"]
- | "f5" -> ["g6"; "d5"; "e4"]
- | "g0" -> ["g3"; "f1"; "d0"]
- | "g3" -> ["g0"; "g6"; "f3"]
- | "g6" -> ["g3"; "f5"; "d6"]
- | _ -> failwith "What did we do wrong..."
-
-
-let createNewNode node: node = 
-    let newPoint =
-        match node.Position.yCoord with
-        | "a" -> 
-            match node.Position.xCoord with
-            | 0 | 3 -> {xCoord = node.Position.xCoord + 3; yCoord = node.Position.yCoord;}
-            | 6 -> {xCoord = 1; yCoord = "b";}
-        | "b" -> 
-            match node.Position.xCoord with
-            | 1 | 3 ->  {xCoord = node.Position.xCoord + 2; yCoord = node.Position.yCoord;}
-            | 5 -> {xCoord = 2; yCoord = "c";}
-        | "c" -> 
-            match node.Position.xCoord with
-            | 2 | 3 -> {xCoord = node.Position.xCoord + 1; yCoord = node.Position.yCoord;}
-            | 4 -> {xCoord = 0; yCoord = "d";}
-        | "d" -> 
-            match node.Position.xCoord with
-            | 0 | 1 | 4 | 5 -> {xCoord = node.Position.xCoord + 1; yCoord = node.Position.yCoord;}
-            | 2 -> {xCoord = 4; yCoord = node.Position.yCoord;}
-            | 6 -> {xCoord = 2; yCoord = "e";}
-        | "e" -> 
-            match node.Position.xCoord with
-            | 2 | 3 -> {xCoord = node.Position.xCoord + 1; yCoord = node.Position.yCoord;}
-            | 4 -> {xCoord = 1; yCoord = "f";}
-        | "f" ->
-            match node.Position.xCoord with
-            | 1 | 3 ->  {xCoord = node.Position.xCoord + 2; yCoord = node.Position.yCoord;}
-            | 5 -> {xCoord = 0; yCoord = "g";}
-        | "g" -> 
-            match node.Position.xCoord with
-            | 0 | 3 ->  {xCoord = node.Position.xCoord + 3; yCoord = node.Position.yCoord;}
-            | 6 -> node.Position
-        | _ -> failwith " something went wrong "
-    
-    let newName = newPoint.yCoord + string newPoint.xCoord
-
-    {Name = newName
-     Position = newPoint
-     Occupied = false
-     team = 0
-     neighbours = createNodeNieghbours newName
-     number = node.number + 1
-     cow = {Name = "[]";Position = "NP"; isOP = false; isOnBoard = false; isAlive = false; inMill = 0 }
-     }
-// this function returns the nieghbours of the node name put in it returns a string list though.
+    | END
 
 
 // this method takes in a node name and returns the actual node. 
@@ -159,34 +56,111 @@ let GetNodeFromName nodeName nodeList =
  getNode nodeList
 
 
-// this funtion will return a list of string lists and these will hold all the combos with that paricular node the cow is on
-let nodesInARow nodeName =
- match nodeName with 
- | "a0" -> [["a0";"a3";"a6"];["a0";"d0";"g0"];["a0";"b1";"c2"]]
- | "a3" -> [["a0";"a3";"a6"];["a3";"b3";"c3"]]
- | "a6" -> [["a0";"a3";"a6"];["a6";"g6";"d6"];["a6";"b5";"c4"]]
- | "b1" -> [["b1";"b3";"b5"];["a0";"b1";"c2"];["b1";"d1";"f1"]]
- | "b3" -> [["b1";"b3";"b5"];["a3";"b3";"c3"]]
- | "b5" -> [["b1";"b3";"b5"];["b5";"a6";"c4"];["b5";"f5";"d5"]]
- | "c2" -> [["c2";"c3";"c4"];["c2";"d2";"e2"];["a0";"b1";"c2"]]
- | "c3" -> [["c2";"c3";"c4"];["a3";"b3";"c3"]]
- | "c4" -> [["c2";"c3";"c4"];["c4";"d4";"e4"];["c4";"b5";"a6"]]
- | "d0" -> [["d0";"d1";"d2"];["a0";"d0";"g0"]]
- | "d1" -> [["d0";"d1";"d2"];["b1";"d1";"f1"]]
- | "d2" -> [["d0";"d1";"d2"];["d2";"e2";"c2"]]
- | "d4" -> [["d4";"d5";"d6"];["d4";"c4";"e4"]]
- | "d5" -> [["d4";"d5";"d6"];["d5";"b5";"f5"]]
- | "d6" -> [["d4";"d5";"d6"];["a6";"d6";"g6"]]
- | "e2" -> [["e2";"e3";"e4"];["e2";"f1";"g0"];["e2";"d2";"c2"]]
- | "e3" -> [["e2";"e3";"e4"];["e3";"f3";"g3"]]
- | "e4" -> [["e2";"e3";"e4"];["e4";"f5";"g6"];["e4";"d4";"c4"]]
- | "f1" -> [["f1";"f3";"f5"];["f1";"e2";"g0"];["f1";"d1";"b1"]]
- | "f3" -> [["f1";"f3";"f5"];["g3";"e3";"f3"]]
- | "f5" -> [["f1";"f3";"f5"];["f5";"e4";"g6"];["f5";"d5";"b5"]]
- | "g0" -> [["g0";"g3";"g6"];["g0";"f1";"e2"];["g0";"a0";"d0"]]
- | "g3" -> [["g0";"g3";"g6"];["g3";"f3";"e3"]]
- | "g6" -> [["g0";"g3";"g6"];["g6";"d6";"a6"];["g6";"f5";"e4"]]
- | _ -> failwith "This cow is all alone"
+let isValidEndNode startNode endNode = 
+    List.exists (fun x -> x = endNode.Name) startNode.neighbours 
+
+
+let moveCowToNewPos startingNode endNode field =
+    let newNode = {endNode with Occupied = true; team = startingNode.team; cow = {startingNode.cow with Position = endNode.Name} }
+    let oldNode = {startingNode with Occupied = false; team = 0; cow =  {Name = "[]";Position = "NP"; isOP = false; isOnBoard = false; isAlive = false; inMill = 0 }}
+    let newField = 
+        List.map (fun x -> 
+        match x.number = startingNode.number with 
+        | true -> oldNode
+        | false -> 
+            match x.number = endNode.number with
+            | true -> newNode
+            | false -> x 
+        ) field
+    newField
+
+
+let moveCows startingNode endNode (field: node List) poweredCow =
+    match poweredCow.isOP with
+    | true -> 
+        match endNode.Occupied with
+        | false -> moveCowToNewPos startingNode endNode field
+        | _ -> field
+    | false ->
+        match isValidEndNode startingNode endNode && endNode.Occupied = false with 
+        | true -> moveCowToNewPos startingNode endNode field
+        | _ -> field
+
+
+let numOfCowsPlayerHasOnBoard fieldList player = 
+    List.fold(fun state fieldNode -> 
+        match fieldNode.team = player with 
+        | true -> (state + 1)
+        | _ -> state
+    ) 0 fieldList
+ 
+
+// this will change the node of the now dead cow to unOccupied and also the name of the cow to default
+let updateSadNode newNodes oldNodes = 
+ let rec check inList outList =
+  match inList with 
+  | [] -> List.rev outList
+  | h::rest -> 
+   match h.Name = newNodes.Name with 
+   | true -> 
+    let newNode = {newNodes with team= 0; Occupied =  false; cow =  {Name = "[]";Position = "NP"; isOP = false; isOnBoard = false; isAlive = false; inMill = 0 }}
+    check rest (newNode::outList)
+   | false -> check rest (h::outList)
+ check oldNodes []  
+
+// this is the method that returns the updated lists.      
+let shooting (deadCow:Cow) (herdLeft: Cow List) =
+ let rec check (inList: Cow List) outList = 
+  match inList with 
+  | [] -> List.rev outList 
+  | h::rest -> 
+   match h.Name=deadCow.Name with 
+   | true -> check rest outList
+   | false -> check rest (h::outList)
+ check herdLeft []
+
+
+// This will return an updated enemy cowsleft and cowsOnField and will not allow friendly fire also returns an updated nodeList
+// still need to call the board update as well as make sure the cow is dead
+let shootCow nodeName mainNodeList enemy = 
+ let (actualNode:Cow option)  = List.tryFind (fun x -> nodeName = x.Position) enemy.cowsOnField
+ match actualNode with 
+ | None -> printfn "you only get one shot gg nood get gub scrub"
+           enemy,mainNodeList
+ | Some cow -> 
+  match cow.inMill <> 1 with 
+  | false -> enemy,mainNodeList
+  | true ->
+   let newCowsOnField = shooting cow enemy.cowsOnField
+   let updateEnemy = {enemy with cowsOnField = newCowsOnField}
+   let NewMainNode = updateSadNode (GetNodeFromName nodeName mainNodeList) mainNodeList
+   updateEnemy,NewMainNode
+
+
+// this will take in a string List (cow List) and also the players filedcows and the new mill value and return a list of cows
+let changeCowMill millRow fieldCows newMill= 
+ let rec check inList (cowList: Cow List) outList = 
+  match inList with 
+  | [] -> List.rev outList
+  | h::rest -> //this is the string node list 
+   let head::tail = cowList
+   match h = head.Position with 
+   | false -> check inList tail (head::outList)
+   | true -> 
+    let newCow = {head with inMill = newMill}
+    check rest tail (newCow::outList)
+ check millRow  (List.rev fieldCows) []
+
+
+ // this will now call changeCowMill from with a rec function and it will still only return a updated Cowfield list :)
+let preChangeCowMill millrow fieldCows newMill = 
+    let rec check nodeInMillNames oldHerd outlist = 
+        match nodeInMillNames with 
+            | [] -> outlist
+            | h::rest -> 
+                let newherd = changeCowMill (List.sortDescending h) (List.sortBy (fun s-> s.Position) oldHerd) newMill
+                check rest newherd newherd
+    check millrow fieldCows []
 
 
 // this method will check each cows mill number in the given row to see if they are allowed to form a mill
@@ -194,6 +168,7 @@ let CheckMillNumber listOfRows cowsToCheck =
   let h::m::t::_ = listOfRows
   let cow1 = List.find (fun (x:Cow) -> x.Position = h ) cowsToCheck
   let cow2 = List.find (fun (x:Cow) -> x.Position = m ) cowsToCheck
+  // Index problem is here
   let cow3 = List.find (fun (x:Cow) -> x.Position = t ) cowsToCheck
   match (cow1.inMill = 0 && cow2.inMill = 0) && cow3.inMill =0 with 
   | true -> true, listOfRows
@@ -229,7 +204,36 @@ let checkCowsInRow millNodeLists mainNodeList cowsOnField  =
  check millNodeLists 0 []
 
 
-// CHECK TO SEE IF I DON"T NEED THIS METHOD
+// this funtion will return a list of string lists and these will hold all the combos with that paricular node the cow is on
+let nodesInARow nodeName =
+     match nodeName with 
+     | "a0" -> [["a0";"a3";"a6"];["a0";"d0";"g0"];["a0";"b1";"c2"]]
+     | "a3" -> [["a0";"a3";"a6"];["a3";"b3";"c3"]]
+     | "a6" -> [["a0";"a3";"a6"];["a6";"g6";"d6"];["a6";"b5";"c4"]]
+     | "b1" -> [["b1";"b3";"b5"];["a0";"b1";"c2"];["b1";"d1";"f1"]]
+     | "b3" -> [["b1";"b3";"b5"];["a3";"b3";"c3"]]
+     | "b5" -> [["b1";"b3";"b5"];["b5";"a6";"c4"];["b5";"f5";"d5"]]
+     | "c2" -> [["c2";"c3";"c4"];["c2";"d2";"e2"];["a0";"b1";"c2"]]
+     | "c3" -> [["c2";"c3";"c4"];["a3";"b3";"c3"]]
+     | "c4" -> [["c2";"c3";"c4"];["c4";"d4";"e4"];["c4";"b5";"a6"]]
+     | "d0" -> [["d0";"d1";"d2"];["a0";"d0";"g0"]]
+     | "d1" -> [["d0";"d1";"d2"];["b1";"d1";"f1"]]
+     | "d2" -> [["d0";"d1";"d2"];["d2";"e2";"c2"]]
+     | "d4" -> [["d4";"d5";"d6"];["d4";"c4";"e4"]]
+     | "d5" -> [["d4";"d5";"d6"];["d5";"b5";"f5"]]
+     | "d6" -> [["d4";"d5";"d6"];["a6";"d6";"g6"]]
+     | "e2" -> [["e2";"e3";"e4"];["e2";"f1";"g0"];["e2";"d2";"c2"]]
+     | "e3" -> [["e2";"e3";"e4"];["e3";"f3";"g3"]]
+     | "e4" -> [["e2";"e3";"e4"];["e4";"f5";"g6"];["e4";"d4";"c4"]]
+     | "f1" -> [["f1";"f3";"f5"];["f1";"e2";"g0"];["f1";"d1";"b1"]]
+     | "f3" -> [["f1";"f3";"f5"];["g3";"e3";"f3"]]
+     | "f5" -> [["f1";"f3";"f5"];["f5";"e4";"g6"];["f5";"d5";"b5"]]
+     | "g0" -> [["g0";"g3";"g6"];["g0";"f1";"e2"];["g0";"a0";"d0"]]
+     | "g3" -> [["g0";"g3";"g6"];["g3";"f3";"e3"]]
+     | "g6" -> [["g0";"g3";"g6"];["g6";"d6";"a6"];["g6";"f5";"e4"]]
+     | _ -> failwith "This cow is all alone"
+
+
 // this method will use the method checkCowsInRow to check if any of the combo rows are true and return (bool*string List)
 let CheckinMill cow nodeList player = 
  match cow with 
@@ -253,72 +257,24 @@ let CheckinMill cow nodeList player =
       1,millrow
 
 
-// this is the method that returns the updated lists.      
-let shooting (deadCow:Cow) (herdLeft: Cow List) =
- let rec check (inList: Cow List) outList = 
-  match inList with 
-  | [] -> List.rev outList 
-  | h::rest -> 
-   match h.Name=deadCow.Name with 
-   | true -> check rest outList
-   | false -> check rest (h::outList)
- check herdLeft []
+let updateList tNode inList outList player =
+    let rec update inList outList  =
+        match inList with 
+        | [] -> List.rev outList
+        | head::tail ->
+            match tNode.Name = head.Name with
+            | true -> let newOut = {head with Occupied = true; team = player.Team; cow = List.head player.cowsLeft}::outList
+                      update tail newOut 
+            | false -> update tail (head::outList) 
+    update inList outList
 
 
-// this will change the node of the now dead cow to unOccupied and also the name of the cow to default
-let updateSadNode newNodes oldNodes = 
- let rec check inList outList =
-  match inList with 
-  | [] -> List.rev outList
-  | h::rest -> 
-   match h.Name = newNodes.Name with 
-   | true -> 
-    let newNode = {newNodes with team= 0; Occupied =  false; cow =  {Name = "[]";Position = "NP"; isOP = false; isOnBoard = false; isAlive = false; inMill = 0 }}
-    check rest (newNode::outList)
-   | false -> check rest (h::outList)
- check oldNodes []  
-
-
-// This will return an updated enemy cowsleft and cowsOnField and will not allow friendly fire also returns an updated nodeList
-// still need to call the board update as well as make sure the cow is dead
-let shootCow nodeName mainNodeList enemy = 
- let (actualNode:Cow option)  = List.tryFind (fun x -> nodeName = x.Position) enemy.cowsOnField
- match actualNode with 
- | None -> printfn "you only get one shot gg nood get gub scrub"
-           enemy,mainNodeList
- | Some cow -> 
-  match cow.inMill <> 1 with 
-  | false -> enemy,mainNodeList
-  | true ->
-   let newCowsOnField = shooting cow enemy.cowsOnField
-   let updateEnemy = {enemy with cowsOnField = newCowsOnField}
-   let NewMainNode = updateSadNode (GetNodeFromName nodeName mainNodeList) mainNodeList
-   updateEnemy,NewMainNode
-
-
-// this creates all the nodes and puts them all into one list.
-let createNodeList =
-    let initPoint = {xCoord=0; yCoord="a";}
-    let initName = initPoint.yCoord + string initPoint.xCoord
-
-    let initNode = {
-        Name = initName
-        Position = initPoint
-        Occupied = false
-        team = 0
-        neighbours = createNodeNieghbours initName
-        number = 0
-        cow = {Name = "[]";Position = "NP"; isOP = false; isOnBoard = false; isAlive = true; inMill = 0 }
-        }
-
-    let rec createField node listNode acc =
-        match acc with 
-        | 23 -> listNode
-        | _ -> 
-            let newNode = createNewNode node
-            createField newNode (newNode::listNode) (acc + 1)
-    
-    createField initNode [initNode] 0
+ // this places the cows on the field
+let placeCow position fieldList player =
+    let targetNode = List.find (fun x -> x.Name = position) fieldList
+    match targetNode.team with
+    | 0 -> updateList targetNode fieldList [] player
+    | _ -> failwith "invalid move"
 
 
 // this just prints the game boards.
@@ -388,155 +344,136 @@ let printField (nodeList: node List) =
     ) nodeList
     Console.ForegroundColor<-ConsoleColor.White
 
-// this is where each node.
-let updateList tNode inList outList player =
-    let rec update inList outList  =
-        match inList with 
-        | [] -> List.rev outList
-        | head::tail ->
-            match tNode.Name = head.Name with
-            | true -> let newOut = {head with Occupied = true; team = player.Team; cow = List.head player.cowsLeft}::outList
-                      update tail newOut 
-            | false -> update tail (head::outList) 
-    update inList outList
+
+let createNodeNieghbours nodeName =
+     match nodeName with 
+     | "a0" -> ["a3";"d0";"b1"]
+     | "a3" -> ["a0"; "b3"; "a6"]
+     | "a6" -> ["a3"; "d6"; "b5"]
+     | "b1" -> ["a0"; "c2"; "d1"; "b3"]
+     | "b3" -> ["a3"; "c3"; "b1"; "b5"]
+     | "b5" -> ["a6"; "c4"; "b3"; "d5"]
+     | "c2" -> ["b1"; "c3"; "d2"]
+     | "c3" -> ["c2"; "c4"; "b3"]
+     | "c4" -> ["c3"; "b5"; "d4"]
+     | "d0" -> ["d1"; "a0"; "g0"]
+     | "d1" -> ["d0"; "b1"; "d2"; "f1";]
+     | "d2" -> ["d1"; "c2"; "e2"]
+     | "d4" -> ["d5"; "c4"; "e4"]
+     | "d5" -> ["d4"; "d6"; "b5"; "f5"]
+     | "d6" -> ["d5"; "a6"; "g6"]
+     | "e2" -> ["f1"; "e3"; "d2"]
+     | "e3" -> ["e2"; "e4"; "f3"]
+     | "e4" -> ["e3"; "f5"; "d4"]
+     | "f1" -> ["d1"; "f3"; "e2"; "g0"]
+     | "f3" -> ["f1"; "e3"; "g3"; "f5"]
+     | "f5" -> ["g6"; "d5"; "e4"]
+     | "g0" -> ["g3"; "f1"; "d0"]
+     | "g3" -> ["g0"; "g6"; "f3"]
+     | "g6" -> ["g3"; "f5"; "d6"]
+     | _ -> failwith "What did we do wrong..."
 
 
-// this places the cows on the field
-let placeCow position fieldList player =
-    let targetNode = List.find (fun x -> x.Name = position) fieldList
-    match targetNode.team with
-    | 0 -> updateList targetNode fieldList [] player
-    | _ -> failwith "invalid move"
-
-
-// this will take in a string List (cow List) and also the players filedcows and the new mill value and return a list of cows
-let changeCowMill millRow fieldCows newMill= 
- let rec check inList (cowList: Cow List) outList = 
-  match inList with 
-  | [] -> List.rev outList
-  | h::rest -> //this is the string node list 
-   let head::tail = cowList
-   match h = head.Position with 
-   | false -> check inList tail (head::outList)
-   | true -> 
-    let newCow = {head with inMill = newMill}
-    check rest tail (newCow::outList)
- check millRow  (List.rev fieldCows) []
-
-
- // this will now call changeCowMill from with a rec function and it will still only return a updated Cowfield list :)
-let preChangeCowMill millrow fieldCows newMill = 
-    let rec check nodeInMillNames oldHerd outlist = 
-        match nodeInMillNames with 
-            | [] -> outlist
-            | h::rest -> 
-                let newherd = changeCowMill (List.sortDescending h) (List.sortBy (fun s-> s.Position) oldHerd) newMill
-                check rest newherd newherd
-    check millrow fieldCows []
-
- // Print out rules and a welcome for Morabaraba 
-let startMessage () = printfn "     Greetings fellow humans.
-
-            For many years the agressive and militant nature of cow has been documented 
-            and studied, and through the generations these studies have been condensed 
-            and widdled into a game played with stones and lines on dirt.
-      
-            In the new age of harnessed electricity and 440ml coke bottles, we have built a new 
-            board out of strings and integers for you to do battle on, as your forefathers once
-            did.                                     
-                    
-            Those who can harness the hyper-agressive and murderous nature of cows will quickly 
-            master the game, and those who cannot will be served as the thin cardboard stuff 
-            they put between a Mcdonalds bun. 
-           
-            Mills will be formed. Bovine blood will be spilled. Cows will fly.
-               
-            Friendships will be ruined. 
-          
-            If you are ready to go to cow war. Type: Begin.
-            
-            If you wish to learn the rules of the game I speak of. Type: Rules. 
-          
-            If you want to leave because this is weird. Type: Flee!.
-            "
-
-let rules () = printfn "The aim of Morabaraba is to get your opponent down to only 2 cows. 
-
-There are three main phases to the game: 
-    1) Placing the cows. 
-    2) Moving the cows. 
-    3) Flying the cows. 
-
-PLACING THE COWS:
-    Each player starts off with 12 cows that they can place anywhere on the board. 
-    Each turn one cows is placed, until all 12 cows have been placed on the board, then 
-    the game moves on to the next phase: moving the cows. 
-
-    Three cows in a row on the board (diagonal, horizontal or vertical) represents a mill. 
-    When a mill is formed, mob syndrome immediately kicks in and the player who formed the mill 
-    can 'shoot' or remove one of the cows from the other players team. Even if two mills are 
-    formed, only one cow may be shot each round. 
-
-    Cows in a mill can not be shot. 
-
-    A cow once outside of a mill must wait a turn, before it is placed back into that same mill. 
-
-MOVING THE COWS 
-    Once all the cows have been placed on the board, cows can be moved to any empty adjacent intersection. 
-
-FLYING THE COWS
-    When a player only has three cows left, the cows gain super powers, and can 'fly' or be placed anywhere 
-    on the board. 
-
-    Only the player will three cows will be allowed to fly. 
-
-    A win occurs if one opponent has no possible moves.
-    A win occurs if a player has just two cows.
-    If either player has only three cows and neither player shoots a cow within ten moves, the game is drawn.
+let createNewNode node: node = 
+    let newPoint =
+        match node.Position.yCoord with
+        | "a" -> 
+            match node.Position.xCoord with
+            | 0 | 3 -> {xCoord = node.Position.xCoord + 3; yCoord = node.Position.yCoord;}
+            | 6 -> {xCoord = 1; yCoord = "b";}
+        | "b" -> 
+            match node.Position.xCoord with
+            | 1 | 3 ->  {xCoord = node.Position.xCoord + 2; yCoord = node.Position.yCoord;}
+            | 5 -> {xCoord = 2; yCoord = "c";}
+        | "c" -> 
+            match node.Position.xCoord with
+            | 2 | 3 -> {xCoord = node.Position.xCoord + 1; yCoord = node.Position.yCoord;}
+            | 4 -> {xCoord = 0; yCoord = "d";}
+        | "d" -> 
+            match node.Position.xCoord with
+            | 0 | 1 | 4 | 5 -> {xCoord = node.Position.xCoord + 1; yCoord = node.Position.yCoord;}
+            | 2 -> {xCoord = 4; yCoord = node.Position.yCoord;}
+            | 6 -> {xCoord = 2; yCoord = "e";}
+        | "e" -> 
+            match node.Position.xCoord with
+            | 2 | 3 -> {xCoord = node.Position.xCoord + 1; yCoord = node.Position.yCoord;}
+            | 4 -> {xCoord = 1; yCoord = "f";}
+        | "f" ->
+            match node.Position.xCoord with
+            | 1 | 3 ->  {xCoord = node.Position.xCoord + 2; yCoord = node.Position.yCoord;}
+            | 5 -> {xCoord = 0; yCoord = "g";}
+        | "g" -> 
+            match node.Position.xCoord with
+            | 0 | 3 ->  {xCoord = node.Position.xCoord + 3; yCoord = node.Position.yCoord;}
+            | 6 -> node.Position
+        | _ -> failwith " something went wrong "
     
-                                                                                Source: Wikipedia Morabaraba
-                                                                    https://en.wikipedia.org/wiki/Morabaraba
-                                                                    
-    Type Begin to start, or flee for COWards.                                                                "
+    let newName = newPoint.yCoord + string newPoint.xCoord
 
-let isValidEndNode startNode endNode = 
-    List.exists (fun x -> x = endNode.Name) startNode.neighbours 
-
-let moveCowToNewPos startingNode endNode field =
-    let newNode = {endNode with Occupied = true; team = startingNode.team; cow = startingNode.cow} 
-    let oldNode = {startingNode with Occupied = false; team = 0; cow =  {Name = "[]";Position = "NP"; isOP = false; isOnBoard = false; isAlive = false; inMill = 0 }}
-    let newField = 
-        List.map (fun x -> 
-        match x.number = startingNode.number with 
-        | true -> oldNode
-        | false -> 
-            match x.number = endNode.number with
-            | true -> newNode
-            | false -> x 
-        ) field
-    newField
-
-let moveCows startingNode endNode (field: node List) poweredCow=
-    match poweredCow.isOP with
-    | true -> 
-        match endNode.Occupied with
-        | false -> moveCowToNewPos startingNode endNode field
-        | _ -> field
-    | false ->
-        match isValidEndNode startingNode endNode && endNode.Occupied = false with 
-        | true -> moveCowToNewPos startingNode endNode field
-        | _ -> field
+    {Name = newName
+     Position = newPoint
+     Occupied = false
+     team = 0
+     neighbours = createNodeNieghbours newName
+     number = node.number + 1
+     cow = {Name = "[]";Position = "NP"; isOP = false; isOnBoard = false; isAlive = false; inMill = 0 }
+     }
+// this function returns the nieghbours of the node name put in it returns a string list though.
 
 
-// Count the number of cows each player has on the board
-let numOfCowsPlayerHasOnBoard fieldList player = 
-    List.fold(fun state fieldNode -> 
-        match fieldNode.team = player with 
-        | true -> (state + 1)
-        | _ -> state
-    ) 0 fieldList
- 
- 
+let rec createField node listNode acc =
+        match acc with 
+        | 23 -> listNode
+        | _ -> 
+            let newNode = createNewNode node
+            createField newNode (newNode::listNode) (acc + 1)
+
+
+let createNodeList =
+    let initPoint = {xCoord=0; yCoord="a";}
+    let initName = initPoint.yCoord + string initPoint.xCoord
+
+    let initNode = {
+        Name = initName
+        Position = initPoint
+        Occupied = false
+        team = 0
+        neighbours = createNodeNieghbours initName
+        number = 0
+        cow = {Name = "[]";Position = "NP"; isOP = false; isOnBoard = false; isAlive = true; inMill = 0 }
+        }
+    
+    //let rec createField node listNode acc =
+
+    createField initNode [initNode] 0
+
+
+// this gives both players their cows
+let givePlayerCows  (myList: Cow list) team=
+    let rec giveCows (playerFieldCows: Cow list) acc =
+        match playerFieldCows.Length with
+        | 12 ->List.rev playerFieldCows
+        | _ -> 
+            match team with 
+            | 1 ->
+                let newCow = {Name = ("R" + (string acc));Position = "NP"; isOP = false; isOnBoard = false; isAlive = true; inMill = 0 }
+                let name = newCow.Name
+                let fieldCows = newCow::playerFieldCows
+                giveCows fieldCows (acc+1)
+            | 2 ->
+                let newCow = {Name = ("B" + (string acc));Position = "NP"; isOP = false; isOnBoard=false; isAlive = true; inMill = 0}
+                let name = newCow.Name
+                let fieldCows = newCow::playerFieldCows
+                giveCows fieldCows (acc+1)
+            | _ -> failwith "lol thats not going to work"
+    giveCows myList 0
+
+
+let createPlayer (name:string) team = 
+     let player1 = {Name = name; cowsLeft = givePlayerCows ([]) team ; isTurn = false; cowsOnField = []; Team = team}
+     player1
+
+
 let gameController () =
     System.Console.Clear()
     let player1 = createPlayer "player 1" 1
@@ -553,9 +490,9 @@ let gameController () =
         let currentPlayer,enemy = playerTurn
 
         match state with 
-        | 0 -> //0 is the placing stage
+        | PLACING -> //0 is the placing stage
             match turns < 10 with
-            | false -> stateMachine (state+1) p1 p2 field turns
+            | false -> stateMachine MOVING p1 p2 field turns
             | _ ->
                 printfn "%s    place cow on which node.      turn = %d" currentPlayer.Name turns
                 let place = System.Console.ReadLine()
@@ -579,19 +516,19 @@ let gameController () =
                 | 0,_ -> 
                         printfn " "
                         stateMachine state enemy updatedPlayer playerPlace (turns + 1)
-        | 1 -> 
+        | MOVING -> 
             printfn ""
-            printfn "stagem 2:"
+            printfn "Stage 2:"
             match (numOfCowsPlayerHasOnBoard field currentPlayer.Team) <= 3 with 
-            | true -> stateMachine (state+1) currentPlayer enemy field turns
+            | true -> stateMachine FLYING currentPlayer enemy field turns
             | _ ->
                 printfn "2nd stage - You will now move cows on to any adjacent, available place.
-                            Please specific the node you want to move first, and then the place 
-                            you want to move it to. 
+                Please specific the node you want to move first, and then the place 
+                you want to move it to. 
                         
-                            e.g. A1 B3
-                            
-                            its %s turn" currentPlayer.Name
+                e.g. A1 B3
+                          
+                its %s turn" currentPlayer.Name
                 let splitLine = (fun (line : string) -> Seq.toList (line.Split ' '))
                 let playerMove = System.Console.ReadLine()
                 let move = splitLine playerMove
@@ -634,11 +571,11 @@ let gameController () =
                         | _ -> printfn "something went horribly wrong"
                          
                 | _ -> failwith "That is not a valid move."
-        | 2 -> 
+        | FLYING -> 
             printfn ""
             printfn "Stage 3: "
             match List.length currentPlayer.cowsOnField < 3 with 
-            | true -> stateMachine (state + 1) currentPlayer enemy field turns
+            | true -> stateMachine END currentPlayer enemy field turns
             | false ->
                 printfn "its %s turn" currentPlayer.Name
                 //let powerPlayer =
@@ -739,11 +676,78 @@ its like moving a cow but they can go to any free node" currentPlayer.Name
                             | _ -> printfn "something went horribly wrong"
                          
                     | _ -> failwith "That is not a valid move."
-        | _ -> printfn "%s lost in %d turns" enemy.Name turns
-    stateMachine 0 player1 player2 fieldList 1
+        | END -> printfn "%s lost in %d turns" enemy.Name turns
+    stateMachine PLACING player1 player2 fieldList 1
 
+
+let rules () = printfn "The aim of Morabaraba is to get your opponent down to only 2 cows. 
+
+There are three main phases to the game: 
+    1) Placing the cows. 
+    2) Moving the cows. 
+    3) Flying the cows. 
+
+PLACING THE COWS:
+    Each player starts off with 12 cows that they can place anywhere on the board. 
+    Each turn one cows is placed, until all 12 cows have been placed on the board, then 
+    the game moves on to the next phase: moving the cows. 
+
+    Three cows in a row on the board (diagonal, horizontal or vertical) represents a mill. 
+    When a mill is formed, mob syndrome immediately kicks in and the player who formed the mill 
+    can 'shoot' or remove one of the cows from the other players team. Even if two mills are 
+    formed, only one cow may be shot each round. 
+
+    Cows in a mill can not be shot. 
+
+    A cow once outside of a mill must wait a turn, before it is placed back into that same mill. 
+
+MOVING THE COWS 
+    Once all the cows have been placed on the board, cows can be moved to any empty adjacent intersection. 
+
+FLYING THE COWS
+    When a player only has three cows left, the cows gain super powers, and can 'fly' or be placed anywhere 
+    on the board. 
+
+    Only the player will three cows will be allowed to fly. 
+
+    A win occurs if one opponent has no possible moves.
+    A win occurs if a player has just two cows.
+    If either player has only three cows and neither player shoots a cow within ten moves, the game is drawn.
+    
+                                                                                Source: Wikipedia Morabaraba
+                                                                    https://en.wikipedia.org/wiki/Morabaraba
+                                                                    
+    Type Begin to start, or flee for COWards.                                                                "
+
+
+let startMessage () = printfn "     Greetings fellow humans.
+
+            For many years the agressive and militant nature of cow has been documented 
+            and studied, and through the generations these studies have been condensed 
+            and widdled into a game played with stones and lines on dirt.
+      
+            In the new age of harnessed electricity and 440ml coke bottles, we have built a new 
+            board out of strings and integers for you to do battle on, as your forefathers once
+            did.                                     
+                    
+            Those who can harness the hyper-agressive and murderous nature of cows will quickly 
+            master the game, and those who cannot will be served as the thin cardboard stuff 
+            they put between a Mcdonalds bun. 
+           
+            Mills will be formed. Bovine blood will be spilled. Cows will fly.
+               
+            Friendships will be ruined. 
+          
+            If you are ready to go to cow war. Type: Begin.
+            
+            If you wish to learn the rules of the game I speak of. Type: Rules. 
+          
+            If you want to leave because this is weird. Type: Flee!.
+            "  // Print out a welcome for Morabaraba 
+           
 
 let rec beginGame () = 
+    startMessage ()
     let ans = System.Console.ReadLine()
     match ans.ToLower() with 
     | "begin" -> gameController ()
@@ -757,7 +761,6 @@ let rec beginGame () =
 
 [<EntryPoint>]
 let main argv =
-    startMessage ()
     beginGame  () 
     printfn "-=-=-=-=-=-=-=- END GAME -=-=-=-=-=-=-=-=-=-" 
     let halt = System.Console.ReadLine ()
