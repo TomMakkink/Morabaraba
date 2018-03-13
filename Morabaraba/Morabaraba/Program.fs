@@ -51,7 +51,9 @@ type Mills =
 
 
 //--------------------------------------------------- METHODS --------------------------------------------------- //
-
+let getPlayerMove (currentPlayer:Player) turns = 
+    printfn "%s    place cow on which node.      turn = %d" currentPlayer.Name turns
+    System.Console.ReadLine()
 
 let GetNodeFromName nodeName nodeList =
 // Can use List.trfFind
@@ -64,6 +66,8 @@ let GetNodeFromName nodeName nodeList =
                | false -> getNode rest
      getNode nodeList
 
+let checkNodeExists nodeName field =
+    List.exists (fun x -> x.Name = nodeName) field
 
 // ----- MOVING COWS ----- //
 
@@ -134,7 +138,7 @@ let numOfCowsPlayerHasOnBoard fieldList player =
 
 
 // this will change the node of the now dead cow to unOccupied and also the name of the cow to default
-let updateSadNode newNodes oldNodes = 
+let updateDeadCowNode newNodes oldNodes = 
      let rec check inList outList =
           match inList with 
           | [] -> List.rev outList
@@ -171,7 +175,7 @@ let shootCow nodeName mainNodeList enemy =
           | true ->
                let newCowsOnField = shooting cow enemy.cowsOnField
                let updateEnemy = {enemy with cowsOnField = newCowsOnField}
-               let NewMainNode = updateSadNode (GetNodeFromName nodeName mainNodeList) mainNodeList
+               let NewMainNode = updateDeadCowNode (GetNodeFromName nodeName mainNodeList) mainNodeList
                updateEnemy,NewMainNode
 
 
@@ -191,13 +195,13 @@ let changeCowMill millRow fieldCows newMill=
 
 
  // this will now call changeCowMill from with a rec function and it will still only return a updated Cowfield list :)
-let preChangeCowMill millrow fieldCows newMill = 
+let filterCowMillList millrow fieldCows newMill = 
     let rec check nodeInMillNames oldHerd outlist millList = 
         match nodeInMillNames with 
             | [] -> outlist,millList
             | h::rest -> 
                 let newherd,finalFormCowList = changeCowMill (List.sortDescending h) (List.sortBy (fun s-> s.Position) oldHerd) newMill
-                check rest newherd newherd millList
+                check rest newherd newherd finalFormCowList
     check millrow fieldCows [] []
 
 
@@ -229,7 +233,7 @@ let checkCowsInRow millNodeLists mainNodeList cowsOnField  =
                     match firNode.team = secNode.team && thirdNode.team = secNode.team with 
                     | false ->  check rest (index + 1) outList
                     | true -> 
-                        match firNode.cow.inMill<>1 && secNode.cow.inMill<>1 && thirdNode.cow.inMill <>1 with 
+                        match firNode.cow.inMill<>1 && secNode.cow.inMill<>1 && thirdNode.cow.inMill <>1 with // <---- this is a problem
                         | false -> check rest (index+1) outList
                         | true ->
                              match CheckMillNumber h cowsOnField, index with 
@@ -299,12 +303,12 @@ let CheckinMill cow nodeList player =
 
 
 let updatePlayer Player millRow = 
-    let newHerd,_ = preChangeCowMill millRow Player.cowsOnField 1
+    let newHerd,_ = filterCowMillList millRow Player.cowsOnField 1
     let updatedPlayer = {Player with cowsOnField = newHerd}
     updatedPlayer
 
 
-let updateList tNode inList outList player =
+let updateFieldList tNode inList outList player =
     let rec update inList outList  =
         match inList with 
         | [] -> List.rev outList
@@ -317,12 +321,17 @@ let updateList tNode inList outList player =
 
 
  // this places the cows on the field
-let placeCow position fieldList player =
-    let targetNode = List.find (fun x -> x.Name = position) fieldList
-    match targetNode.team with
-    | 0 -> updateList targetNode fieldList [] player
-    | _ -> failwith "invalid move"
-
+let rec placeCow position fieldList player turns =
+    let targetNode = List.tryFind (fun x -> x.Name = position) fieldList
+    match targetNode with 
+    | Some t -> 
+            match t.team with
+            | 0 -> updateFieldList t fieldList [] player
+            | _ -> failwith "Node is broken."
+    | _ -> 
+        printfn " not valid node"
+        let newPos = getPlayerMove player turns
+        placeCow newPos fieldList player turns
 
 // this just prints the game boards.
 let printField (nodeList: node List) =
@@ -402,7 +411,7 @@ let matchMill mill updatedPlayer updatedField enemy =
     match mill with
     | 1,millRow -> 
         let chosen = chooseCowToShoot()
-        let newHerd,_ = preChangeCowMill millRow updatedPlayer.cowsOnField 1
+        let newHerd,_ = filterCowMillList millRow updatedPlayer.cowsOnField 1
         let newPlayer = {updatedPlayer with cowsOnField = newHerd}
         let updateEnemy,newfield = shootCow chosen updatedField enemy
         printfn " "
@@ -414,11 +423,6 @@ let matchMill mill updatedPlayer updatedField enemy =
         printfn " "
         0
     | _ -> failwith "something went horribly wrong"
-
-
-let getPlayerMove (currentPlayer:Player) turns = 
-    printfn "%s    place cow on which node.      turn = %d" currentPlayer.Name turns
-    System.Console.ReadLine()
 
 
 let createNodeNieghbours nodeName =
@@ -563,32 +567,32 @@ let gameController () =
         let currentPlayer,enemy = playerTurn
         match state with 
         | PLACING -> //0 is the placing stage
-            match turns < 10 with
+            match turns < 25 with
             | false -> stateMachine MOVING p1 p2 field turns millList
             | _ ->
                 //let p = placeCow currentPlayer field turns 
                 let place = getPlayerMove currentPlayer turns
-                let playerPlace = placeCow place field currentPlayer //player place is the new field
+                let newPlayerField = placeCow place field currentPlayer turns
                 let h::CowsLeft =  currentPlayer.cowsLeft   // cowsleft list is the cows that are left in the players hand
                 let newCow = {Name =h.Name; Position = place; isAlive = h.isAlive; isOnBoard = true; isOP=h.isOP; inMill = h.inMill}
                 let updatedPlayer = {currentPlayer with cowsLeft = CowsLeft; cowsOnField = newCow::currentPlayer.cowsOnField}
-                printField playerPlace
+                printField newPlayerField
                 
-                let q = CheckinMill (List.tryHead updatedPlayer.cowsOnField) (playerPlace) (updatedPlayer) 
+                let q = CheckinMill (List.tryHead updatedPlayer.cowsOnField) (newPlayerField) (updatedPlayer) 
                 match q with 
                 | 1,millRow -> 
                         let chosen = chooseCowToShoot()
-                        let newHerd,supremeUltimateCowList = preChangeCowMill millRow updatedPlayer.cowsOnField 1 
+                        let newHerd,supremeUltimateCowList = filterCowMillList millRow updatedPlayer.cowsOnField 1 
 
                         let newPlayer = {updatedPlayer with cowsOnField = newHerd}
-                        let updateEnemy,newfield = shootCow chosen playerPlace enemy
+                        let updateEnemy,newfield = shootCow chosen newPlayerField enemy
                         printfn " "
                         printField newfield
                         printfn " "
                         stateMachine state updateEnemy newPlayer newfield (turns+1) (supremeUltimateCowList::millList)
                 | 0,_ -> 
                     printfn " "
-                    stateMachine state enemy updatedPlayer playerPlace (turns + 1) millList
+                    stateMachine state enemy updatedPlayer newPlayerField (turns + 1) millList
                 | _ -> printfn "something went horribly wrong"
         | MOVING -> 
             movingIntroMessage currentPlayer
@@ -601,8 +605,13 @@ let gameController () =
                         let startNode = GetNodeFromName startPoint field
                         let endNode = GetNodeFromName endPoint field
                         let cowToMove = List.find (fun (x:Cow)-> startNode.Name = x.Position) currentPlayer.cowsOnField
-                        let movedCow = {cowToMove with Position = endNode.Name}
 
+
+                        let movedCow = //{cowToMove with Position = endNode.Name}
+                            match cowToMove.inMill with 
+                            | 0 -> {cowToMove with Position = endNode.Name}
+                            | 1 -> {cowToMove with Position = endNode.Name; inMill = 2}
+                            | 2 -> {cowToMove with Position = endNode.Name; inMill = 0}
                         let updatedField = moveCows startNode endNode field movedCow
 
                         let updatedCowsOnField = 
@@ -620,7 +629,7 @@ let gameController () =
                         match mill with
                         | 1,millRow -> 
                             let chosen = chooseCowToShoot()
-                            let newHerd,supremeUltimateCowList = preChangeCowMill millRow updatedPlayer.cowsOnField 1 
+                            let newHerd,supremeUltimateCowList = filterCowMillList millRow updatedPlayer.cowsOnField 1 
 
                             let newPlayer = {updatedPlayer with cowsOnField = newHerd}
                             let updateEnemy,newfield = shootCow chosen updatedField enemy
@@ -653,7 +662,6 @@ let gameController () =
                     let move = splitLine playerMove
                     match move with 
                     | [startPoint;endPoint] -> 
-                    // Think about storing this in a tuple
                             let startNode = GetNodeFromName startPoint field
                             let endNode = GetNodeFromName endPoint field
                             let cowToMove = List.find (fun (x:Cow)-> startNode.Name = x.Position) powerdPlayer.cowsOnField
@@ -675,7 +683,7 @@ let gameController () =
                             match mill with
                             | 1,millRow -> 
                                 let chosen = chooseCowToShoot()
-                                let newHerd,supremeUltimateCowList = preChangeCowMill millRow updatedPlayer.cowsOnField 1
+                                let newHerd,supremeUltimateCowList = filterCowMillList millRow updatedPlayer.cowsOnField 1
                                 let newPlayer = {updatedPlayer with cowsOnField = newHerd}
                                 let updateEnemy,newfield = shootCow chosen updatedField enemy
                                 printfn " "
@@ -717,7 +725,7 @@ let gameController () =
                             match mill with
                             | 1,millRow -> 
                                 let chosen = chooseCowToShoot()
-                                let newHerd, supremeUltimateCowList = preChangeCowMill millRow updatedPlayer.cowsOnField 1
+                                let newHerd, supremeUltimateCowList = filterCowMillList millRow updatedPlayer.cowsOnField 1
                                 let newPlayer = {updatedPlayer with cowsOnField = newHerd}
                                 let updateEnemy,newfield = shootCow chosen updatedField enemy
                                 printfn " "
@@ -732,7 +740,7 @@ let gameController () =
                          
                     | _ -> failwith "That is not a valid move."
         | END -> printfn "%s lost in %d turns" enemy.Name turns
-    stateMachine PLACING player1 player2 fieldList 1
+    stateMachine PLACING player1 player2 fieldList 1 []
 
 
 let rules () = printfn "The aim of Morabaraba is to get your opponent down to only 2 cows. 
@@ -816,7 +824,7 @@ let rec beginGame () =
 
 [<EntryPoint>]
 let main argv =
-    beginGame  () 
+    beginGame () 
     printfn "-=-=-=-=-=-=-=- END GAME -=-=-=-=-=-=-=-=-=-" 
     let halt = System.Console.ReadLine ()
     printfn "%A" argv
