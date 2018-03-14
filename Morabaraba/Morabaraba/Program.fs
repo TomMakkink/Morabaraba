@@ -51,9 +51,7 @@ type Mills =
 
 
 //--------------------------------------------------- METHODS --------------------------------------------------- //
-let getPlayerMove (currentPlayer:Player) turns = 
-    printfn "%s    place cow on which node.      turn = %d" currentPlayer.Name turns
-    System.Console.ReadLine()
+
 
 let GetNodeFromName nodeName nodeList =
 // Can use List.trfFind
@@ -68,15 +66,49 @@ let GetNodeFromName nodeName nodeList =
 
 let checkNodeExists nodeName field =
     List.exists (fun x -> x.Name = nodeName) field
+    
+
+let isNodeOccupied nodeName field = 
+    let node = GetNodeFromName nodeName field
+    node.Occupied 
+
+
+
+let introMessage (currentPlayer:Player) turns state = 
+    match state with 
+    | PLACING -> printfn "%s (turn = %d)
+Place cow on which node:" currentPlayer.Name turns
+    | MOVING -> printfn "Stage 2 - You will now move cows on to any adjacent, available place.
+    Please specific the node you want to move first, and then the place 
+    you want to move it to. 
+                        
+    e.g. A1 B3
+                          
+    its %s turn" currentPlayer.Name
+    | FLYING -> 
+                printfn ""
+                printfn "Stage 3: "
+                printfn "%ss cows can fly to any free node now its like moving a cow 
+                but they can go to any free node" currentPlayer.Name
+    | END -> failwith "The game is over"
+    
+
+let rec getPlayerMove (currentPlayer:Player) turns field state = 
+    let () = introMessage currentPlayer turns state
+    let nodeName = System.Console.ReadLine().ToLower()
+    let validNode = checkNodeExists nodeName field
+    match validNode with 
+    | true -> 
+        match isNodeOccupied nodeName field with 
+        | false -> nodeName
+        | _ -> printfn "That node is occupied, please enter a new node name" 
+               getPlayerMove currentPlayer turns field state
+    | _ -> printfn "That node does not exist, please enter a new node name" 
+           getPlayerMove currentPlayer turns field state
+
 
 // ----- MOVING COWS ----- //
 
-
-let flyingIntroMessage (currentPlayer:Player) = 
-    printfn ""
-    printfn "Stage 3: "
-    printfn "%ss cows can fly to any free node now its like moving a cow 
-    but they can go to any free node" currentPlayer.Name
 
 
 let isValidEndNode startNode endNode = 
@@ -112,18 +144,8 @@ let moveCows startingNode endNode (field: node List) poweredCow =
 
 let chooseWhereToMove () = 
     let splitLine = (fun (line : string) -> Seq.toList (line.Split ' '))
-    let playerMove = System.Console.ReadLine()
+    let playerMove = System.Console.ReadLine().ToLower()
     splitLine playerMove
-
-
-let movingIntroMessage (currentPlayer:Player) = 
-    printfn "Stage 2 - You will now move cows on to any adjacent, available place.
-    Please specific the node you want to move first, and then the place 
-    you want to move it to. 
-                        
-    e.g. A1 B3
-                          
-    its %s turn" currentPlayer.Name
 
 
 let numOfCowsPlayerHasOnBoard fieldList player = 
@@ -321,17 +343,16 @@ let updateFieldList tNode inList outList player =
 
 
  // this places the cows on the field
-let rec placeCow position fieldList player turns =
+ // CHECK WITH JEFF - TOM 
+let placeCow position fieldList player turns =
     let targetNode = List.tryFind (fun x -> x.Name = position) fieldList
     match targetNode with 
     | Some t -> 
             match t.team with
             | 0 -> updateFieldList t fieldList [] player
             | _ -> failwith "Node is broken."
-    | _ -> 
-        printfn " not valid node"
-        let newPos = getPlayerMove player turns
-        placeCow newPos fieldList player turns
+
+        //let rec getPlayerMove (currentPlayer:Player) turns field state 
 
 // this just prints the game boards.
 let printField (nodeList: node List) =
@@ -569,9 +590,8 @@ let gameController () =
         | PLACING -> //0 is the placing stage
             match turns < 25 with
             | false -> stateMachine MOVING p1 p2 field turns millList
-            | _ ->
-                //let p = placeCow currentPlayer field turns 
-                let place = getPlayerMove currentPlayer turns
+            | _ -> 
+                let place = getPlayerMove currentPlayer turns field state
                 let newPlayerField = placeCow place field currentPlayer turns
                 let h::CowsLeft =  currentPlayer.cowsLeft   // cowsleft list is the cows that are left in the players hand
                 let newCow = {Name =h.Name; Position = place; isAlive = h.isAlive; isOnBoard = true; isOP=h.isOP; inMill = h.inMill}
@@ -595,7 +615,7 @@ let gameController () =
                     stateMachine state enemy updatedPlayer newPlayerField (turns + 1) millList
                 | _ -> printfn "something went horribly wrong"
         | MOVING -> 
-            movingIntroMessage currentPlayer
+            //movingIntroMessage currentPlayer
             match (numOfCowsPlayerHasOnBoard field currentPlayer.Team) <= 3 with 
             | true -> stateMachine FLYING currentPlayer enemy field turns millList
             | _ ->
@@ -644,7 +664,7 @@ let gameController () =
                          
                 | _ -> failwith "That is not a valid move."
         | FLYING -> 
-            flyingIntroMessage currentPlayer
+            //flyingIntroMessage currentPlayer
             match List.length currentPlayer.cowsOnField < 3 with 
             | true -> stateMachine END currentPlayer enemy field turns millList
             | false ->
@@ -823,9 +843,9 @@ let rec beginGame () =
 
 
 [<EntryPoint>]
-let main argv =
+let main _ =
     beginGame () 
     printfn "-=-=-=-=-=-=-=- END GAME -=-=-=-=-=-=-=-=-=-" 
     let halt = System.Console.ReadLine ()
-    printfn "%A" argv
+    printfn "%A" 
     0 // return an integer exit code
