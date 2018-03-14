@@ -1,4 +1,5 @@
 ﻿open System;
+open System.Security.Cryptography.X509Certificates
 
 //------------------------------------------------ DATA STUCTURES ------------------------------------------------ //
 
@@ -74,27 +75,13 @@ let isNodeOccupied nodeName field =
 
 
 
-let introMessage (currentPlayer:Player) turns state = 
-    match state with 
-    | PLACING -> printfn "%s (turn = %d)
+let placingIntroMessage (currentPlayer:Player) turns = 
+    printfn "%s (turn = %d)
 Place cow on which node:" currentPlayer.Name turns
-    | MOVING -> printfn "Stage 2 - You will now move cows on to any adjacent, available place.
-    Please specific the node you want to move first, and then the place 
-    you want to move it to. 
-                        
-    e.g. A1 B3
-                          
-    its %s turn" currentPlayer.Name
-    | FLYING -> 
-                printfn ""
-                printfn "Stage 3: "
-                printfn "%ss cows can fly to any free node now its like moving a cow 
-                but they can go to any free node" currentPlayer.Name
-    | END -> failwith "The game is over"
     
 
 let rec getPlayerMove (currentPlayer:Player) turns field state = 
-    let () = introMessage currentPlayer turns state
+    let () = placingIntroMessage currentPlayer turns 
     let nodeName = System.Console.ReadLine().ToLower()
     let validNode = checkNodeExists nodeName field
     match validNode with 
@@ -142,10 +129,37 @@ let moveCows startingNode endNode (field: node List) poweredCow =
         | _ -> field
 
 
-let chooseWhereToMove () = 
+let movingIntroMessage (currentPlayer:Player) =
+    printfn "Stage 2 - You will now move cows on to any adjacent, available place.
+    Please specific the node you want to move first, and then the place 
+    you want to move it to. 
+                        
+    e.g. A1 B3
+                          
+    its %s turn" currentPlayer.Name
+
+
+let checkInputLength (split:string list) = 
+    match split.Length <> 2 with 
+    | true -> false
+    | _ -> true
+
+let rec chooseWhereToMove field = 
     let splitLine = (fun (line : string) -> Seq.toList (line.Split ' '))
     let playerMove = System.Console.ReadLine().ToLower()
-    splitLine playerMove
+    let split = splitLine playerMove
+    let isRightLength = checkInputLength split 
+    match isRightLength with 
+    | true ->  
+        let [x;y] = split 
+        let validStartNode = checkNodeExists x field
+        let validEndNode = checkNodeExists y field
+        match validEndNode && validStartNode with 
+            | true -> split
+            | _ -> printfn "These nodes are not valid. Please try again." 
+                   chooseWhereToMove field
+    | _ -> printfn "Please enter two, valid input nodes."
+           chooseWhereToMove field
 
 
 let numOfCowsPlayerHasOnBoard fieldList player = 
@@ -588,7 +602,7 @@ let gameController () =
         let currentPlayer,enemy = playerTurn
         match state with 
         | PLACING -> //0 is the placing stage
-            match turns < 25 with
+            match turns < 10 with
             | false -> stateMachine MOVING p1 p2 field turns millList
             | _ -> 
                 let place = getPlayerMove currentPlayer turns field state
@@ -615,11 +629,11 @@ let gameController () =
                     stateMachine state enemy updatedPlayer newPlayerField (turns + 1) millList
                 | _ -> printfn "something went horribly wrong"
         | MOVING -> 
-            //movingIntroMessage currentPlayer
+            movingIntroMessage currentPlayer
             match (numOfCowsPlayerHasOnBoard field currentPlayer.Team) <= 3 with 
             | true -> stateMachine FLYING currentPlayer enemy field turns millList
             | _ ->
-                let move = chooseWhereToMove ()
+                let move = chooseWhereToMove field
                 match move with 
                 | [startPoint;endPoint] -> 
                         let startNode = GetNodeFromName startPoint field
