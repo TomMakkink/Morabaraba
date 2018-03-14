@@ -74,7 +74,6 @@ let isNodeOccupied nodeName field =
     node.Occupied 
 
 
-
 let placingIntroMessage (currentPlayer:Player) turns = 
     printfn "%s (turn = %d)
 Place cow on which node:" currentPlayer.Name turns
@@ -97,10 +96,21 @@ let rec getPlayerMove (currentPlayer:Player) turns field state =
 // ----- MOVING COWS ----- //
 
 
+let isValidStartNode startNode (player:Player) field =
+    startNode.team = player.Team
 
-let isValidEndNode startNode endNode = 
-    List.exists (fun x -> x = endNode.Name) startNode.neighbours 
+let isValidEndNode startNode endNode field =
+    List.exists (fun x -> x = endNode.Name) startNode.neighbours
 
+
+let isValidMove startNodename endNodeName (player:Player) field = 
+    let startNode = GetNodeFromName startNodename field
+    let endNode = GetNodeFromName endNodeName field
+    let validStart = isValidStartNode startNode player field 
+    let validEnd = isValidEndNode startNode endNode field 
+    match validStart = true && validEnd = true with 
+    | true -> true 
+    | _ -> false
 
 let moveCowToNewPos startingNode endNode field =
     let newNode = {endNode with Occupied = true; team = startingNode.team; cow = {startingNode.cow with Position = endNode.Name} }
@@ -123,10 +133,7 @@ let moveCows startingNode endNode (field: node List) poweredCow =
         match endNode.Occupied with
         | false -> moveCowToNewPos startingNode endNode field
         | _ -> field
-    | false ->
-        match isValidEndNode startingNode endNode && endNode.Occupied = false with 
-        | true -> moveCowToNewPos startingNode endNode field
-        | _ -> field
+    | false -> field
 
 
 let movingIntroMessage (currentPlayer:Player) =
@@ -139,27 +146,36 @@ let movingIntroMessage (currentPlayer:Player) =
     its %s turn" currentPlayer.Name
 
 
-let checkInputLength (split:string list) = 
+let checkInputLength (split:string list) =
     match split.Length <> 2 with 
     | true -> false
     | _ -> true
 
-let rec chooseWhereToMove field = 
+let moveValidation startNodeName endNodeName player field =
+    let isValidStart =  checkNodeExists startNodeName field 
+    let isValidEnd = checkNodeExists endNodeName field 
+    match isValidEnd = true && isValidStart = true with 
+    | true -> 
+        match isValidMove startNodeName endNodeName player field with 
+        | true -> true 
+        | _ -> false
+    | _ -> false
+
+
+let rec chooseWhereToMove field (player:Player) = 
     let splitLine = (fun (line : string) -> Seq.toList (line.Split ' '))
     let playerMove = System.Console.ReadLine().ToLower()
     let split = splitLine playerMove
     let isRightLength = checkInputLength split 
     match isRightLength with 
     | true ->  
-        let [x;y] = split 
-        let validStartNode = checkNodeExists x field
-        let validEndNode = checkNodeExists y field
-        match validEndNode && validStartNode with 
-            | true -> split
-            | _ -> printfn "These nodes are not valid. Please try again." 
-                   chooseWhereToMove field
+        let [x;y] = split
+        match moveValidation x y player field with 
+        | true -> split 
+        | false -> printfn "Please enter two, valid input nodes."
+                   chooseWhereToMove field player
     | _ -> printfn "Please enter two, valid input nodes."
-           chooseWhereToMove field
+           chooseWhereToMove field player
 
 
 let numOfCowsPlayerHasOnBoard fieldList player = 
@@ -633,14 +649,12 @@ let gameController () =
             match (numOfCowsPlayerHasOnBoard field currentPlayer.Team) <= 3 with 
             | true -> stateMachine FLYING currentPlayer enemy field turns millList
             | _ ->
-                let move = chooseWhereToMove field
+                let move = chooseWhereToMove field currentPlayer
                 match move with 
                 | [startPoint;endPoint] -> 
                         let startNode = GetNodeFromName startPoint field
                         let endNode = GetNodeFromName endPoint field
                         let cowToMove = List.find (fun (x:Cow)-> startNode.Name = x.Position) currentPlayer.cowsOnField
-
-
                         let movedCow = //{cowToMove with Position = endNode.Name}
                             match cowToMove.inMill with 
                             | 0 -> {cowToMove with Position = endNode.Name}
