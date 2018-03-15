@@ -25,10 +25,7 @@ type Point = {
     xCoord: int
     yCoord: string
     }
-(* team 0 = no team
-        1 = player 1 team
-        2 = player 2 team
-        *)
+
 type node = {
     Name: string
     Position : Point
@@ -127,9 +124,7 @@ let isValidMove startNodename endNodeName (player:Player) field =
 
 let checkInputLength (split:string list) =
     split.Length = 2
-    (*match split.Length <> 2 with 
-    | true -> false
-    | _ -> true*)
+
 
 let moveValidation startNodeName endNodeName player field =
     let isValidStart =  checkNodeExists startNodeName field 
@@ -169,7 +164,7 @@ let rec chooseWhereToFly field (currentPlayer:Player) =
                        chooseWhereToFly field currentPlayer
     | false -> printfn "Please enter two, valid input nodes."
                chooseWhereToFly field currentPlayer
-//chooseWhereToFly field currentPlayer
+
 
 let moveCowToNewPos startingNode endNode field movedCow=
     let newNode = {endNode with Occupied = true; team = startingNode.team; cow = {movedCow with inMill = 0} }
@@ -265,9 +260,8 @@ let shooting (deadCow:Cow) (herdLeft: Cow List) =
 
 
 // This will return an updated enemy cowsleft and cowsOnField and will not allow friendly fire also returns an updated nodeList
-// still need to call the board update as well as make sure the cow is dead
 let rec shootCow nodeName mainNodeList enemy = 
-     let (actualNode:Cow option)  = List.tryFind (fun x -> nodeName = x.Position) (getPlayerCowsOnBoard enemy mainNodeList) ///Think about passing in as a parameter
+     let (actualNode:Cow option)  = List.tryFind (fun x -> nodeName = x.Position) (getPlayerCowsOnBoard enemy mainNodeList) 
      match actualNode with 
      | None -> printfn "You chose an empty node please try again"
                let newchoosen = chooseCowToShoot()
@@ -280,8 +274,6 @@ let rec shootCow nodeName mainNodeList enemy =
                      let newEnemy,NewNodes = shootCow newchoosen mainNodeList enemy
                      newEnemy,NewNodes
           | true ->
-               //let newCowsOnField = shooting cow (getPlayerCowsOnBoard enemy mainNodeList)
-               //let updateEnemy = {enemy with cowsOnField = newCowsOnField}
                let NewMainNode = updateDeadCowNode (GetNodeFromName nodeName mainNodeList) mainNodeList
                enemy,NewMainNode
 
@@ -293,7 +285,7 @@ let changeCowMill millRow fieldCows newMill=
           | [] -> 
                 let templist = cowList@outList
                 (List.rev templist), millList
-          | h::rest -> //this is the string node list 
+          | h::rest -> 
                let head::tail = cowList
                match h = head.Position with 
                | false -> check inList tail (head::outList) millList
@@ -350,7 +342,7 @@ let checkCowsInRow millNodeLists mainNodeList cowsOnField  =
                     match firNode.team = secNode.team && thirdNode.team = secNode.team with 
                     | false ->  check rest (index + 1) outList
                     | true -> 
-                        match firNode.cow.inMill<>1 && secNode.cow.inMill<>1 && thirdNode.cow.inMill <>1 with // <---- this is a problem
+                        match firNode.cow.inMill<>1 && secNode.cow.inMill<>1 && thirdNode.cow.inMill <>1 with
                         | false -> 
                              let millList = [firNode;secNode;thirdNode]
                              let q = List.filter (fun x -> x.cow.inMill <> 1) millList
@@ -364,7 +356,7 @@ let checkCowsInRow millNodeLists mainNodeList cowsOnField  =
                              | (false,_), _ -> check rest (index + 1) outList
                              | (true,x), 2 -> 
                                 match List.length millNodeLists = 2 with 
-                                    | false -> check rest (index+1) (x::outList) //<-- luke wtf man?
+                                    | false -> check rest (index+1) (x::outList) 
                                     | true -> true,(x::outList) 
                              | (true,x), _ -> check rest (index+1) (x::outList)
      check millNodeLists 0 []
@@ -419,12 +411,6 @@ let CheckinMill (cow:Cow) nodeList playerCowsOnField =
                     1,rowMill
 // ----- PLACING ----- //
 
-(*
-let updatePlayer Player millRow fieldList = 
-    let newHerd,_ = filterCowMillList millRow Player.cowsOnField 1 fieldList
-    let updatedPlayer = {Player with cowsOnField = newHerd}
-    updatedPlayer
-    *)
 
 let updateFieldList tNode inList outList player =
     let rec update inList outList  =
@@ -480,7 +466,6 @@ let resetInMillNumbers (startnode:node) millList updatedField =
 
 
  // this places the cows on the field
- // CHECK WITH JEFF - TOM 
 let placeCow position fieldList player turns =
     let targetNode = List.tryFind (fun x -> x.Name = position) fieldList
     match targetNode with 
@@ -489,9 +474,8 @@ let placeCow position fieldList player turns =
             | 0 -> updateFieldList t fieldList [] player
             | _ -> failwith "Node is broken."
 
-        //let rec getPlayerMove (currentPlayer:Player) turns field state 
 
-// this just prints the game boards.
+// prints the game boards.
 let printField (nodeList: node List) =
     Console.ForegroundColor<-ConsoleColor.Cyan
     printfn "   0  1  2        3       4  5  6"
@@ -720,8 +704,7 @@ let gameController () =
                 let updatedPlayer = {currentPlayer with cowsLeft = CowsLeft}
 
                 let playerCowsOnField = getPlayerCowsOnBoard currentPlayer newPlayerField
-                //printfn "%A" playerCowsOnBoard
-                // printfn "%A" updatedPlayer.cowsOnField
+     
 
                 printField newPlayerField
                 let placeNode = List.find ( fun x -> x.cow.Position = place) newPlayerField
@@ -801,11 +784,12 @@ let gameController () =
                     
                     let updatedField,movedCow = MOVECOW playerMove field EnlightedTheBeasts 
                     let startNode = GetNodeFromName (List.head playerMove) updatedField
-                    let updatedField = resetInMillNumbers startNode millList updatedField 
+                    let updatedField = resetInMillNumbers startNode millList updatedField
+                    
                     let playerCowsOnField = getPlayerCowsOnBoard currentPlayer updatedField
                     printField updatedField
 
-                    let playerCowsOnField = getPlayerCowsOnBoard currentPlayer updatedField
+                    //let playerCowsOnField = getPlayerCowsOnBoard currentPlayer updatedField
 
                     let mill = CheckinMill movedCow updatedField playerCowsOnField
                     match mill with
