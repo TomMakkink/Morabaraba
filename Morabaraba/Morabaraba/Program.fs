@@ -663,12 +663,12 @@ let givePlayerCows  (myList: Cow list) team=
         | _ -> 
             match team with 
             | 1 ->
-                let newCow = {Name = ("R" + (string acc));Position = "NP"; isOP = false; isOnBoard = false; isAlive = true; inMill = 0 }
+                let newCow = {Name = "P1";Position = "NP"; isOP = false; isOnBoard = false; isAlive = true; inMill = 0 }
                 let name = newCow.Name
                 let fieldCows = newCow::playerFieldCows
                 giveCows fieldCows (acc+1)
             | 2 ->
-                let newCow = {Name = ("B" + (string acc));Position = "NP"; isOP = false; isOnBoard=false; isAlive = true; inMill = 0}
+                let newCow = {Name = "P2" ;Position = "NP"; isOP = false; isOnBoard=false; isAlive = true; inMill = 0}
                 let name = newCow.Name
                 let fieldCows = newCow::playerFieldCows
                 giveCows fieldCows (acc+1)
