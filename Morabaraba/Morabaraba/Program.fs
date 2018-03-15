@@ -694,7 +694,7 @@ let gameController () =
         let currentPlayer,enemy = playerTurn
         match state with 
         | PLACING -> //0 is the placing stage
-            match turns < 9 with
+            match turns < 25 with
             | false -> stateMachine MOVING p1 p2 field turns millList
             | _ -> 
                 let place = getPlayerMove currentPlayer turns field state
