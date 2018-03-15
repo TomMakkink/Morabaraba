@@ -43,6 +43,7 @@ type gameState =
     | PLACING
     | MOVING 
     | FLYING
+    | DRAW
     | END
 
 type Mills = 
@@ -732,11 +733,15 @@ let gameController () =
                         let FieldList,supremeUltimateCowList = filterCowMillList millRow playerCowsOnField 1 newPlayerField //<-- should be playercowsonfield 
 
                         //let newPlayer = {updatedPlayer with cowsOnField = newHerd}
-                        let updateEnemy,newfield = shootCow chosen FieldList enemy
-                        printfn " "
-                        printField newfield
-                        printfn " "
-                        stateMachine state updateEnemy updatedPlayer newfield (turns+1) (supremeUltimateCowList::millList)
+                        let isNotStaleMate = List.exists(fun x -> x.cow.inMill = 0) FieldList
+                        match isNotStaleMate with 
+                        | false -> stateMachine DRAW currentPlayer enemy field turns millList
+                        | _ -> 
+                            let updateEnemy,newfield = shootCow chosen FieldList enemy
+                            printfn " "
+                            printField newfield
+                            printfn " "
+                            stateMachine state updateEnemy updatedPlayer newfield (turns+1) (supremeUltimateCowList::millList)
                 | 3,millRow -> //3 is the number given if a partial mill is formed 
                         let FieldList,supremeUltimateCowList = filterCowMillList millRow playerCowsOnField 1 newPlayerField
                         printField FieldList
@@ -767,11 +772,15 @@ let gameController () =
                     let FieldList,supremeUltimateCowList = filterCowMillList millRow playerCowsOnField 1 updatedField
 
                     // let newPlayer = {updatedPlayer with cowsOnField = newHerd}
-                    let updateEnemy,newfield = shootCow chosen FieldList enemy
-                    printfn " "
-                    printField newfield
-                    printfn " "
-                    stateMachine state updateEnemy currentPlayer newfield (turns+1) (supremeUltimateCowList::millList)
+                    let isNotStaleMate = List.exists(fun x -> x.cow.inMill = 0) FieldList
+                    match isNotStaleMate with 
+                    | false -> stateMachine DRAW currentPlayer enemy field turns millList
+                    | _ -> 
+                        let updateEnemy,newfield = shootCow chosen FieldList enemy
+                        printfn " "
+                        printField newfield
+                        printfn " "
+                        stateMachine state updateEnemy currentPlayer newfield (turns+1) (supremeUltimateCowList::millList)
                 | 0,_ -> 
                     printfn " "
                     stateMachine state enemy currentPlayer updatedField (turns + 1) millList
@@ -791,7 +800,9 @@ let gameController () =
                     let playerMove = chooseWhereToFly field currentPlayer
                     
                     let updatedField,movedCow = MOVECOW playerMove field EnlightedTheBeasts 
-                    
+                    let startNode = GetNodeFromName (List.head playerMove) updatedField
+                    let updatedField = resetInMillNumbers startNode millList updatedField 
+                    let playerCowsOnField = getPlayerCowsOnBoard currentPlayer updatedField
                     printField updatedField
 
                     let playerCowsOnField = getPlayerCowsOnBoard currentPlayer updatedField
@@ -816,6 +827,7 @@ let gameController () =
                     stateMachine MOVING currentPlayer enemy field turns millList
                     | _ -> failwith "That is not a valid move."
         | END -> printfn "%s lost in %d turns" enemy.Name turns
+        | DRAW -> printfn "It's a draw. Game ended in %d turns" turns
     stateMachine PLACING player1 player2 fieldList 1 []
 
 
